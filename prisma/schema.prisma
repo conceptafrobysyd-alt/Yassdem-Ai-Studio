@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Settings {
+  id                    String   @id @default("default")
+  locale                String   @default("fr")
+  theme                 String   @default("light")
+  contentLocale         String   @default("fr")
+  preferredStyles       String   @default("[]")
+  customStyles          String   @default("[]")
+  hijab                 Boolean  @default(false)
+  activeLogoId          String?
+  preferredResolution   Int      @default(1080)
+  preferredFormat       String   @default("9:16")
+  defaultProvider       String   @default("local")
+  monthlyBudgetCents    Int      @default(0)
+  providerEnabled       Boolean  @default(false)
+  usdToEur              Float    @default(1)
+  logoSize              Int      @default(15)
+  logoOpacity           Float    @default(0.8)
+  logoPosition          String   @default("bottom-right")
+  passwordHash          String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   @default("product")
+  description String   @default("")
+  parameters  String   @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  media       Media[]
+  jobs        Job[]
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  name      String
+  path      String
+  mimeType  String
+  size      Int
+  width     Int?
+  height    Int?
+  duration  Float?
+  role      String   @default("SOURCE")
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+}
+
+model Job {
+  id                  String   @id @default(cuid())
+  projectId           String
+  project             Project  @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  sourceMediaId       String
+  provider            String
+  kind                String   @default("generation")
+  status              String   @default("QUEUED")
+  prompt              String   @default("")
+  parameters          String   @default("{}")
+  budgetMonth         String
+  estimatedCostCents  Int      @default(0)
+  actualCostCents     Int?
+  reservedCents       Int      @default(0)
+  providerRequested   Boolean  @default(false)
+  providerTaskId      String?
+  outputMediaId       String?
+  errorCode           String?
+  progress            Int      @default(0)
+  idempotencyKey      String   @unique
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  @@index([status, createdAt])
+  @@index([budgetMonth])
+}
