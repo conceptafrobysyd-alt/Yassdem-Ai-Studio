@@ -316,7 +316,7 @@ export async function cancelJob(id: string) {
   if (terminalStatuses.includes(job.status)) return job;
   if (job.providerRequested && !job.providerTaskId)
     throw new JobError('JOB_SUBMITTING', 409);
-  if (job.providerTaskId)
+  if (job.providerTaskId && job.provider === 'runway')
     await new RunwayProvider().cancelTask(job.providerTaskId);
   const result = await db.job.updateMany({
     where: { id, status: job.status },
@@ -639,6 +639,8 @@ export async function processPendingJobs() {
       // Never repeat a POST after a crash: a missing task ID means an unknown charge.
       await db.job.updateMany({
         where: {
+          provider: 'runway',
+          kind: { in: ['generation', 'export'] },
           providerRequested: true,
           providerTaskId: null,
           status: { in: ['PROCESSING', 'SUBMITTING'] },
@@ -646,17 +648,31 @@ export async function processPendingJobs() {
         data: { status: 'UNKNOWN', errorCode: 'RUNWAY_SUBMISSION_UNKNOWN' },
       });
       await db.job.updateMany({
-        where: { providerRequested: false, status: 'PROCESSING' },
+        where: {
+          provider: { in: ['local', 'runway'] },
+          kind: { in: ['generation', 'export'] },
+          providerRequested: false,
+          status: 'PROCESSING',
+        },
         data: { status: 'QUEUED', progress: 0 },
       });
       await db.job.updateMany({
-        where: { providerTaskId: { not: null }, status: 'EXPORTING' },
+        where: {
+          provider: 'runway',
+          kind: { in: ['generation', 'export'] },
+          providerTaskId: { not: null },
+          status: 'EXPORTING',
+        },
         data: { status: 'RUNNING' },
       });
       recovered = true;
     }
     const jobs = await db.job.findMany({
-      where: { status: { in: ['QUEUED', 'RUNNING'] } },
+      where: {
+        provider: { in: ['local', 'runway'] },
+        kind: { in: ['generation', 'export'] },
+        status: { in: ['QUEUED', 'RUNNING'] },
+      },
       orderBy: { createdAt: 'asc' },
       take: 20,
     });

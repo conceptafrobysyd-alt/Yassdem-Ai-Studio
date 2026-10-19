@@ -228,24 +228,37 @@ export async function deleteMedia(id: string) {
       where: { OR: [{ sourceMediaId: id }, { outputMediaId: id }] },
     });
     if (referencedJob) throw new ApiError(409, 'MEDIA_IN_USE');
+    if (await tx.mannequin.findFirst({ where: { referenceMediaId: id } }))
+      throw new ApiError(409, 'MEDIA_IN_USE');
+    const looks = await tx.look.findMany({
+      where: {
+        OR: [{ outputMediaId: id }, { garmentMediaIds: { contains: id } }],
+      },
+    });
+    for (const look of looks) {
+      if (
+        look.outputMediaId === id ||
+        (JSON.parse(look.garmentMediaIds) as string[]).includes(id)
+      )
+        throw new ApiError(409, 'MEDIA_IN_USE');
+    }
+
     const candidates = await tx.job.findMany({
       where: { parameters: { contains: id } },
       select: { parameters: true, status: true },
     });
-    const activeStatuses = [
-      'QUEUED',
-      'RUNNING',
-      'SUBMITTING',
-      'PROCESSING',
-      'EXPORTING',
-    ];
+    function references(value: unknown): boolean {
+      if (value === id) return true;
+      if (Array.isArray(value)) return value.some(references);
+      return Boolean(
+        value &&
+        typeof value === 'object' &&
+        Object.values(value).some(references),
+      );
+    }
     for (const job of candidates) {
       try {
-        const parameters = JSON.parse(job.parameters);
-        if (
-          parameters.nativeMediaId === id ||
-          (parameters.logoId === id && activeStatuses.includes(job.status))
-        )
+        if (references(JSON.parse(job.parameters)))
           throw new ApiError(409, 'MEDIA_IN_USE');
       } catch (error) {
         if (error instanceof ApiError) throw error;

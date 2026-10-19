@@ -16,7 +16,8 @@
     "db:generate": "prisma generate",
     "db:deploy": "prisma migrate deploy",
     "postinstall": "prisma generate",
-    "test:smoke": "tsx scripts/smoke.ts"
+    "test:smoke": "tsx scripts/smoke.ts",
+    "test:smoke:fashion": "tsx scripts/smoke-fashion.ts"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "6.19.0",

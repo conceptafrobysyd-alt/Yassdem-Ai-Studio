@@ -1,4 +1,9 @@
 const fr = {
+  fashionDescription:
+    'Profils réutilisables, vêtements et créations éditoriales.',
+  lookbookDescription:
+    'Composez, déclinez et exportez vos collections de looks.',
+
   libraryUploadDescription:
     'Images : 5 Mo · MP4 : 100 Mo · logos PNG, JPG ou WebP',
 

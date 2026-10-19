@@ -57,6 +57,7 @@ import {
   Select,
   cn,
 } from './ui/primitives';
+import { FashionStudio } from './fashion-studio';
 import fr from '@/messages/fr';
 import en from '@/messages/en';
 type Locale = 'fr' | 'en';
@@ -321,7 +322,10 @@ function StudioApp({
     );
   const project = projects.find((p) => p.id === selectedId),
     source = media.find((m) => m.id === parameters.sourceMediaId),
-    projectJobs = jobs.filter((j) => j.projectId === selectedId),
+    projectJobs = jobs.filter(
+      (j) =>
+        j.projectId === selectedId && ['generation', 'export'].includes(j.kind),
+    ),
     spent = snapshot?.budget?.actualCostCents || 0,
     reserved = snapshot?.budget?.reservedCents || 0,
     committed = spent + reserved,
@@ -423,7 +427,13 @@ function StudioApp({
       ...p.parameters,
     } as Parameters);
     setEstimated(null);
-    setPage('studio');
+    setPage(
+      p.type === 'fashion'
+        ? 'fashion'
+        : p.type === 'lookbook'
+          ? 'lookbook'
+          : 'studio',
+    );
     setPlayingJob(null);
   }
   function newProject() {
@@ -582,7 +592,13 @@ function StudioApp({
         : page === 'studio'
           ? t('productVideo')
           : t(
-              page === 'library' ? 'libraryDescription' : 'settingsDescription',
+              page === 'library'
+                ? 'libraryDescription'
+                : page === 'fashion'
+                  ? 'fashionDescription'
+                  : page === 'lookbook'
+                    ? 'lookbookDescription'
+                    : 'settingsDescription',
             );
   return (
     <div className="app-shell">
@@ -620,6 +636,8 @@ function StudioApp({
             { id: 'dashboard', icon: LayoutDashboard },
             { id: 'studio', icon: Clapperboard },
             { id: 'library', icon: FolderOpen },
+            { id: 'fashion', icon: Shirt },
+            { id: 'lookbook', icon: Layers3 },
           ].map((item) => (
             <button
               key={item.id}
@@ -634,8 +652,6 @@ function StudioApp({
           <div className="nav-divider" />
           <div className="sidebar-label upcoming-label">{t('upcoming')}</div>
           {[
-            { id: 'fashion', icon: Shirt, phase: 3 },
-            { id: 'lookbook', icon: Layers3, phase: 3 },
             { id: 'editor', icon: Film, phase: 4 },
             { id: 'seo', icon: ScanLine, phase: 4 },
           ].map((item) => (
@@ -778,7 +794,7 @@ function StudioApp({
                   <Check size={16} />
                   {t('saveProject')}
                 </Button>
-              ) : (
+              ) : ['fashion', 'lookbook'].includes(page) ? null : (
                 <Button onClick={newProject}>
                   <Plus size={17} />
                   {t('newProject')}
@@ -857,7 +873,15 @@ function StudioApp({
                   { label: 'assets', value: media.length, icon: ImageIcon },
                   {
                     label: 'completedVideos',
-                    value: jobs.filter((j) => j.status === 'SUCCEEDED').length,
+                    value: jobs.filter(
+                      (j) =>
+                        j.status === 'SUCCEEDED' &&
+                        media.some(
+                          (m) =>
+                            m.id === j.outputMediaId &&
+                            m.mimeType.startsWith('video/'),
+                        ),
+                    ).length,
                     icon: Film,
                   },
                   { label: 'monthSpent', value: money(spent), icon: Wallet },
@@ -2258,6 +2282,29 @@ function StudioApp({
               </div>
             </div>
           )}
+          {(page === 'fashion' || page === 'lookbook') && (
+            <FashionStudio
+              locale={locale}
+              view={page}
+              initialProjectId={selectedId}
+              projects={projects}
+              media={media}
+              jobs={jobs}
+              onRefresh={reload}
+              onAnimate={(mediaId: string, projectId: string) => {
+                const target = projects.find((p) => p.id === projectId);
+                setSelectedId(projectId);
+                setParameters({
+                  ...baseParameters(settings),
+                  ...target?.parameters,
+                  sourceMediaId: mediaId,
+                } as Parameters);
+                setEstimated(null);
+                setPlayingJob(null);
+                setPage('studio');
+              }}
+            />
+          )}
           <footer className="workspace-footer">
             <Brand compact />
             <span>{t('tagline')}</span>
@@ -2660,7 +2707,15 @@ function ProjectCard({
             <span>YASSDEM STUDIO</span>
           </div>
         )}
-        <Badge>{t('productVideo')}</Badge>
+        <Badge>
+          {t(
+            project.type === 'fashion'
+              ? 'fashion'
+              : project.type === 'lookbook'
+                ? 'lookbook'
+                : 'productVideo',
+          )}
+        </Badge>
         <span className="project-open">
           <ArrowUpRight size={18} />
         </span>

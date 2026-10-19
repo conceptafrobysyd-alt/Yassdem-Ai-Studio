@@ -1,4 +1,7 @@
 const en = {
+  fashionDescription: 'Reusable profiles, garments and editorial creations.',
+  lookbookDescription: 'Compose, vary and export your look collections.',
+
   libraryUploadDescription:
     'Images: 5 MB · MP4: 100 MB · PNG, JPG or WebP logos',
 

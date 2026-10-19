@@ -3,7 +3,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import archiver from 'archiver';
 import { PassThrough, Readable } from 'node:stream';
-import type { Project, Media, Job } from '@prisma/client';
+import type { Project, Media, Job, Look, Mannequin } from '@prisma/client';
 import { db } from '@/lib/db';
 import { ApiError, boundedString } from '@/lib/http';
 import { publicMedia, resolveMediaPath, storageRoot } from '@/lib/media';
@@ -96,7 +96,11 @@ export async function getProject(id: string) {
   };
 }
 async function includeReferencedMedia(
-  project: Project & { media: Media[]; jobs: Job[] },
+  project: Project & {
+    media: Media[];
+    jobs: Job[];
+    looks?: (Look & { mannequin: Mannequin | null })[];
+  },
 ) {
   const ids = new Set(project.media.map((media) => media.id));
   function collect(value: unknown) {
@@ -120,6 +124,13 @@ async function includeReferencedMedia(
       /* Malformed old metadata has no usable references. */
     }
   }
+  for (const look of project.looks || []) {
+    collect(JSON.parse(look.garmentMediaIds));
+    collect(JSON.parse(look.parameters));
+    if (look.outputMediaId) ids.add(look.outputMediaId);
+    if (look.mannequin?.referenceMediaId)
+      ids.add(look.mannequin.referenceMediaId);
+  }
   const media = new Map(project.media.map((item) => [item.id, item]));
   const candidates = [...ids].filter((id) => !media.has(id));
   for (let offset = 0; offset < candidates.length; offset += 500) {
@@ -133,7 +144,11 @@ async function includeReferencedMedia(
 export async function duplicateProject(id: string) {
   const source = await db.project.findUnique({
     where: { id },
-    include: { media: true, jobs: true },
+    include: {
+      media: true,
+      jobs: true,
+      looks: { include: { mannequin: true } },
+    },
   });
   if (!source) throw new ApiError(404, 'PROJECT_NOT_FOUND');
   const sourceMedia = await includeReferencedMedia(source);
@@ -177,6 +192,7 @@ export async function duplicateProject(id: string) {
         role,
       });
     }
+    for (const look of source.looks) ids.set(look.id, randomUUID());
     function remap(value: unknown): unknown {
       if (typeof value === 'string') return ids.get(value) ?? value;
       if (Array.isArray(value)) return value.map(remap);
@@ -195,6 +211,20 @@ export async function duplicateProject(id: string) {
         description: source.description,
         parameters,
         media: { create: media },
+        looks: {
+          create: source.looks.map((look) => ({
+            id: ids.get(look.id),
+            name: look.name,
+            mannequinId: look.mannequinId,
+            garmentMediaIds: JSON.stringify(
+              remap(JSON.parse(look.garmentMediaIds)),
+            ),
+            parameters: JSON.stringify(remap(JSON.parse(look.parameters))),
+            outputMediaId: look.outputMediaId
+              ? ids.get(look.outputMediaId) || look.outputMediaId
+              : null,
+          })),
+        },
       },
     });
     return publicProject(created);
@@ -214,7 +244,12 @@ export async function deleteProject(id: string) {
       where: {
         projectId: id,
         OR: [
-          { providerRequested: true },
+          {
+            providerRequested: true,
+            provider: { in: ['runway', 'replicate'] },
+          },
+          { reservedCents: { gt: 0 } },
+          { actualCostCents: { gt: 0 } },
           {
             status: {
               in: [
@@ -243,7 +278,11 @@ export async function deleteProject(id: string) {
 export async function archiveProject(id: string) {
   const project = await db.project.findUnique({
     where: { id },
-    include: { media: true, jobs: true },
+    include: {
+      media: true,
+      jobs: true,
+      looks: { include: { mannequin: true } },
+    },
   });
   if (!project) throw new ApiError(404, 'PROJECT_NOT_FOUND');
   const archiveMedia = await includeReferencedMedia(project);
@@ -261,7 +300,23 @@ export async function archiveProject(id: string) {
     format: 'yassdem-project-backup',
     version: 1,
     exportedAt: new Date().toISOString(),
-    project: { ...publicProject(project), media: undefined, jobs: undefined },
+    project: {
+      ...publicProject(project),
+      media: undefined,
+      jobs: undefined,
+      looks: undefined,
+    },
+    looks: project.looks.map((look) => ({
+      ...look,
+      garmentMediaIds: JSON.parse(look.garmentMediaIds),
+      parameters: JSON.parse(look.parameters),
+      mannequin: look.mannequin
+        ? {
+            ...look.mannequin,
+            parameters: JSON.parse(look.mannequin.parameters),
+          }
+        : null,
+    })),
     media: archiveMedia.map((media) => ({
       ...publicMedia(media),
       url: undefined,

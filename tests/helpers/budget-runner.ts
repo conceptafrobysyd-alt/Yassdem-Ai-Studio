@@ -1,7 +1,14 @@
 /** Exercise financial persistence under the same plain Node+tsx runtime as the
  * worker, keeping the native SQLite lifecycle outside test-runner VM contexts. */
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import {
+  mkdtemp,
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -12,15 +19,17 @@ async function main() {
   process.env.STORAGE_DIR = join(dir, 'storage');
   process.env.RUNWAY_API_KEY = 'dummy-test-key-never-sent';
   const sqlite = new DatabaseSync(join(dir, 'test.db'));
-  sqlite.exec(
-    await readFile(
-      join(
-        process.cwd(),
-        'prisma/migrations/20261019000000_initial/migration.sql',
+  for (const name of (
+    await readdir(join(process.cwd(), 'prisma/migrations'))
+  ).sort()) {
+    if (name === 'migration_lock.toml') continue;
+    sqlite.exec(
+      await readFile(
+        join(process.cwd(), 'prisma/migrations', name, 'migration.sql'),
+        'utf8',
       ),
-      'utf8',
-    ),
-  );
+    );
+  }
   sqlite.close();
   const png = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jAjYAAAAASUVORK5CYII=',

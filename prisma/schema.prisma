@@ -41,6 +41,7 @@ model Project {
   updatedAt   DateTime @updatedAt
   media       Media[]
   jobs        Job[]
+  looks       Look[]
 }
 
 model Media {
@@ -82,4 +83,31 @@ model Job {
   updatedAt           DateTime @updatedAt
   @@index([status, createdAt])
   @@index([budgetMonth])
+}
+
+
+model Mannequin {
+  id               String   @id @default(cuid())
+  name             String
+  description      String   @default("")
+  parameters       String   @default("{}")
+  referenceMediaId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  looks            Look[]
+}
+
+model Look {
+  id              String     @id @default(cuid())
+  name            String
+  projectId       String
+  project         Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mannequinId     String?
+  mannequin       Mannequin? @relation(fields: [mannequinId], references: [id], onDelete: SetNull)
+  garmentMediaIds String     @default("[]")
+  parameters      String     @default("{}")
+  outputMediaId   String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  @@index([projectId, createdAt])
 }

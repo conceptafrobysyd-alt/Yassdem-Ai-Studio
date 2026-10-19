@@ -1,8 +1,8 @@
 # Yassdem AI Studio
 
-Studio personnel de création de vidéos produits. Cette version implémente le socle des phases 1 et 2 : projets, médiathèque, paramètres, animation locale d'une photo, adaptateur Runway et export MP4. Le parcours local a été vérifié ; la génération Runway réelle reste à valider avec un compte configuré. L'interface propose le français et l'anglais.
+Studio personnel de création de vidéos produits et de collections fashion. Les phases 1 à 3 apportent les projets, la médiathèque, les paramètres, l'animation locale d'une photo, l'adaptateur Runway, les exports MP4, les profils de mannequins et la composition de looks. L'interface propose le français et l'anglais.
 
-L'animation locale est un mouvement de caméra sur une image fixe avec FFmpeg. Ce n'est pas une génération IA. L'intégration Runway est implémentée mais une génération réelle nécessite votre clé, votre budget et une confirmation ; aucun résultat Runway réel n'est fourni avec le projet.
+Le parcours local produit de vrais fichiers : vidéo par zoom FFmpeg d'une image fixe et planche de vêtements par assemblage Sharp. Ces deux modes sont sans IA. Les intégrations Runway et ComfyUI sont implémentées ; aucune génération Runway, image éditoriale IA ou véritable inférence d'essayage virtuel n'a été validée avec un fournisseur réel pour cette livraison.
 
 ## Installation rapide
 
@@ -41,11 +41,15 @@ Gardez le terminal actif : le worker traite les tâches persistées en base. `Ct
 
 Le budget mensuel est de **0 €** par défaut et Runway est désactivé. Le parcours local ne déclenche aucun appel payant.
 
+Pour une collection fashion, choisissez Fashion Studio ou Lookbook Creator, importez de 1 à 8 vêtements, enregistrez un profil de mannequin facultatif puis composez un look. Le mode **Planche de collection** crée un PNG de vos photos originales, sans les faire porter au mannequin. Vous pouvez créer des variantes, comparer les originaux et le résultat, télécharger la planche puis l'ouvrir dans le studio vidéo. Le [guide de phase 3](docs/PHASE_3.md) détaille ce parcours et les workflows IA optionnels.
+
 ## Données et configuration
 
 Le fichier `.env.example` décrit les variables prises en charge. `DATABASE_URL="file:./studio.db"` crée la base dans `prisma/studio.db`. `STORAGE_DIR="./storage"` désigne les médias et la clé locale de session ; utilisez un chemin absolu pour partager un emplacement précis entre les processus. Les fichiers `.env`, la base et `storage/` sont exclus de Git.
 
 `RUNWAY_API_KEY` reste exclusivement sur le serveur. Elle est facultative pour le fonctionnement local. Ne la placez jamais dans une variable `NEXT_PUBLIC_*`, un prompt, une capture d'écran ou un commit. `FFMPEG_PATH` et `FFPROBE_PATH` permettent de préciser les exécutables si nécessaire. Le [guide Runway](docs/RUNWAY.md) détaille la connexion, les coûts et les limites.
+
+ComfyUI est facultatif. Les modes Fashion IA demandent un service séparé, ses modèles et des graphes API adaptés, configurés avec `COMFYUI_URL`, `COMFYUI_FASHION_WORKFLOW` et `COMFYUI_TRYON_WORKFLOW`. Aucun GPU ni poids de modèle n'est installé automatiquement. Le guide de phase 3 décrit le contrat des fichiers JSON et distingue la validité de leur configuration d'une inférence réellement réussie.
 
 Cette version est destinée à un usage personnel sur une machine de confiance. Un déploiement distant demande un volume persistant pour la base et les médias, HTTPS, un contrôle des accès et une sauvegarde externe. Il ne faut pas utiliser un hébergement de fonctions éphémères pour le worker et les fichiers locaux.
 
@@ -56,14 +60,16 @@ npm run typecheck
 npm test
 npm run build
 npm run test:smoke
+npm run test:smoke:fashion
 ```
 
-Le test `test:smoke` nécessite le build ; il démarre sa propre instance avec une base et un stockage temporaires, importe une image puis produit de vrais MP4 avec FFmpeg. Les tests automatisés ne déclenchent pas d'appel Runway payant. Les validations réellement exécutées et leurs limites sont consignées dans [VALIDATION.md](docs/VALIDATION.md).
+Les tests HTTP nécessitent le build et démarrent leur propre instance avec une base et un stockage temporaires. `test:smoke` produit de vrais MP4 avec FFmpeg ; `test:smoke:fashion` vérifie les profils, les looks, les archives et une vraie planche PNG. Les tests d'adaptateurs IA utilisent des réponses simulées et ne déclenchent pas d'appel payant. Les validations réellement exécutées et leurs limites sont consignées dans [VALIDATION.md](docs/VALIDATION.md).
 
 - [Architecture et exploitation](docs/ARCHITECTURE.md)
 - [Installation Windows](docs/INSTALLATION_WINDOWS.md)
 - [Configuration Runway et budget](docs/RUNWAY.md)
+- [Fashion, lookbooks et configuration ComfyUI](docs/PHASE_3.md)
 - [Fonctionnalités et limites](docs/FONCTIONNALITES.md)
 - [Licences des composants](LICENSES.md)
 
-Les phases 3 à 5 restent à développer : mannequins et virtual try-on, lookbooks, montage multipiste, SEO Pinterest et fournisseurs IA supplémentaires. Consultez l'inventaire avant de considérer un élément du cahier des charges comme livré.
+Les phases 4 et 5 restent à valider et livrer séparément : montage de plusieurs clips, SEO Pinterest et fournisseurs IA supplémentaires. Les modes Fashion IA restent conditionnés à une installation ComfyUI compatible et à sa validation réelle. Consultez l'inventaire avant de considérer un élément du cahier des charges comme livré.

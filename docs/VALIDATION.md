@@ -12,7 +12,31 @@ Résultats constatés le **19 octobre 2026** dans l'environnement Linux cloud, a
 | Prisma | 6.19.0, moteur JavaScript et adaptateur SQLite officiel |
 | better-sqlite3 / SQLite | 12.11.1 / 3.53.2 |
 
-## Contrôles exécutés
+## Phase 3 — Contrôles actuels
+
+| Contrôle | Résultat |
+| --- | --- |
+| Sélection de tests des phases 1 à 3 | 58 tests réussis : 12 backend, 16 Runway, 1 test Fashion pilotant 9 groupes de vérifications, 29 ComfyUI |
+| Contrat ComfyUI | Tests de transport et de sécurité réussis, avec HTTP simulé ; une vraie base SQLite et un vrai PNG décodé vérifient la persistance |
+| Build de production intégré | Réussi ; contrôle final après ajustement du cache de polices en cours |
+| Parcours HTTP Fashion en production | 3 groupes réussis avec `npm run test:smoke:fashion` |
+| Navigateur Fashion | Création d'un profil, import, planche réelle, changement FR/EN conservant le projet et enregistrement sans changement vérifiés |
+| Lookbook et mobile de phase 3 | Vérification finale en cours |
+| Inférence ComfyUI réelle | Non exécutée ; aucun service, GPU, checkpoint ou poids de modèle installé |
+
+Les trois groupes HTTP de phase 3 vérifient l'accès privé, les profils, les références et la réutilisation des vêtements ; la file persistante et la création d'un vrai PNG de planche avec coût d'API nul, source non IA et absence de doublon ; les variantes, la copie indépendante des médias et des looks lors d'une duplication de projet, l'archive ZIP et le refus explicite d'une demande IA sans ComfyUI configuré.
+
+Le test Fashion utilise un processus Node.js et une vraie base SQLite. Ses neuf groupes vérifient les styles et le hijab indépendants, la validation des entrées, les looks et profils persistants, les variantes, la conservation des couleurs originales dans le collage, le worker et l'idempotence, la conservation du résultat après un enregistrement sans changement et son invalidation après modification du profil, la protection d'un look en cours de rendu, puis les suppressions et chemins privés. Ce sont neuf groupes d'assertions au sein d'un test Vitest ; ils ne sont pas additionnés au total de 58.
+
+La sélection reproduisant les 58 tests est :
+
+```bash
+npx vitest run tests/backend.test.ts tests/runway.test.ts tests/fashion.test.ts tests/comfyui.test.ts
+```
+
+Les fonctionnalités des phases 4 et 5 sont validées et documentées séparément. Les résultats ci-dessus ne revendiquent aucune livraison de ces phases ni aucune génération Fashion IA réelle.
+
+## Phases 1 et 2 — Historique des contrôles
 
 | Contrôle | Résultat |
 | --- | --- |
@@ -21,7 +45,7 @@ Résultats constatés le **19 octobre 2026** dans l'environnement Linux cloud, a
 | Vérification TypeScript | `npm run typecheck` réussi |
 | Tests unitaires du backend | 12 tests réussis |
 | Tests adaptateur Runway et budget | 16 tests réussis ; les appels au fournisseur sont simulés |
-| Suite automatisée complète | 28 tests réussis avec `better-sqlite3` 12.11.1 |
+| Suite des phases 1 et 2 | 28 tests réussis avec `better-sqlite3` 12.11.1, repris dans la sélection de phase 3 |
 | Parcours HTTP réel en mode développement | 9 contrôles réussis avec `SMOKE_DEV=1 npm run test:smoke` |
 | Build de production | `npm run build` réussi |
 | Parcours HTTP réel en mode production | 9 contrôles réussis avec le pilote 12.11.1 |
@@ -35,7 +59,7 @@ Le contrôle du filigrane ne se limite pas à l'existence du fichier : une image
 
 Un contrôle d'export complémentaire a produit une vidéo H.265 en 720p à partir d'une source de test d'une seconde, avec conservation d'une piste AAC et fondu du logo. FFprobe a vérifié la sortie ; des pixels blancs au début puis rouges au milieu confirment l'apparition du logo. Les encodeurs `libx264` et `libx265` sont disponibles dans cette installation de FFmpeg.
 
-## Parcours dans le navigateur
+## Parcours dans le navigateur — Phases 1 et 2
 
 Le parcours vérifié couvre la création du mot de passe, la création d'un projet puis le changement FR/EN sans perte de ce projet, l'import d'une image et la création d'une vidéo locale. Le lecteur lit la vraie vidéo et son temps de lecture avance ; le rafraîchissement de l'état des tâches fonctionne.
 
@@ -56,6 +80,7 @@ npm run typecheck
 npm test
 npm run build
 npm run test:smoke
+npm run test:smoke:fashion
 ```
 
 Le test `test:smoke` utilise le serveur compilé par défaut : exécutez d'abord le build. Il démarre sa propre instance, sans toucher aux projets de votre instance. Il nécessite FFmpeg/FFprobe et un port libre (`SMOKE_PORT` permet de modifier le port utilisé). Pour le contrôle avec le serveur de développement exécuté ci-dessus :
