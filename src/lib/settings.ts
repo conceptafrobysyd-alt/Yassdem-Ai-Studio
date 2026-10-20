@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { getAuthSettings } from '@/lib/auth';
 import { ApiError } from '@/lib/http';
 import type { Settings } from '@prisma/client';
+import { getReplicateVideoConfiguration } from './provider-catalog';
 
 function array(value: string): string[] {
   try {
@@ -53,7 +54,7 @@ export async function updateSettings(input: Record<string, unknown>) {
     contentLocale: ['fr', 'en'],
     preferredResolution: [720, 1080, 1440, 2160],
     preferredFormat: ['9:16', '4:5', '1:1', '16:9'],
-    defaultProvider: ['local', 'runway'],
+    defaultProvider: ['local', 'runway', 'replicate'],
     logoPosition: [
       'top-left',
       'top-right',
@@ -76,6 +77,12 @@ export async function updateSettings(input: Record<string, unknown>) {
           'INVALID_SETTINGS',
           `Valeur invalide : ${key}.`,
         );
+      if (
+        key === 'defaultProvider' &&
+        value === 'replicate' &&
+        !getReplicateVideoConfiguration()
+      )
+        throw new ApiError(400, 'REPLICATE_VIDEO_MODEL_REQUIRED');
       data[key] = value as string | number;
     } else if (key === 'preferredStyles' || key === 'customStyles') {
       if (

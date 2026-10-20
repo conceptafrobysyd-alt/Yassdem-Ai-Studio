@@ -2,6 +2,14 @@
   margin-top: 24px;
   min-width: 0;
 }
+.providers-generation-only {
+  margin-top: 16px;
+}
+.providers-generation-only .providers-generator {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: 0;
+}
 .providers-panel > .panel-heading {
   display: flex;
   justify-content: space-between;

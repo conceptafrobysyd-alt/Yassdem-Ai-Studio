@@ -1,6 +1,6 @@
 # Sauvegarde Git et synchronisation GitHub
 
-Les étapes validées sont enregistrées en commits locaux et repérées par les tags `phase-1-2`, `phase-3`, `phase-4` et `phase-5`. Les commits des premières étapes sont `43c40c9` (phases 1–2), `74b79d6` (phase 3) et `fbebbff` (phase 4) ; `git log` affiche aussi le commit final de phase 5.
+Les étapes validées sont enregistrées en commits locaux et repérées par les tags `phase-1-2`, `phase-3`, `phase-4`, `phase-5` puis `complement-*`. Les premiers compléments sont `31511b7` (aperçus), `144fd8d` (styles) et `ded55a5` (import autorisé) ; `git log` affiche aussi le complément du catalogue et les dernières vérifications.
 
 Lors de cette livraison, GitHub refuse les envois vers `conceptafrobysyd-alt/Yassdem-Ai-Studio` avec une erreur **403 — accès en écriture refusé**. Les commits restent disponibles localement. Une mise à niveau d’abonnement ne modifie pas les autorisations de ce dépôt. Vérifiez les droits du compte et de la connexion GitHub utilisée pour ce dépôt ; aucun jeton ne doit être envoyé dans le chat ou ajouté aux fichiers.
 
@@ -26,10 +26,10 @@ git clone -b main /chemin/yassdem-ai-studio.bundle Yassdem-Ai-Studio
 cd Yassdem-Ai-Studio
 git bundle verify /chemin/yassdem-ai-studio.bundle
 git log --oneline --decorate -5
-git tag --list 'phase-*'
+git tag --list
 git remote set-url origin https://github.com/conceptafrobysyd-alt/Yassdem-Ai-Studio.git
 git push -u origin main
-git push origin phase-1-2 phase-3 phase-4 phase-5
+git push origin --tags
 ```
 
 Utilisez l’authentification GitHub habituelle de votre machine. N’insérez aucun jeton dans l’URL du dépôt. Un nouvel échec 403 exige de corriger les droits de la connexion ; répéter le même envoi ne les modifie pas.
@@ -45,7 +45,7 @@ cd /workspace/Yassdem-Ai-Studio
 git status --short
 git log --oneline --decorate -5
 git push -u origin main
-git push origin phase-1-2 phase-3 phase-4 phase-5
+git push origin --tags
 ```
 
 Un commit local, une sauvegarde bundle et un envoi GitHub réussi sont trois états distincts. La présence des deux premiers ne prouve pas la synchronisation distante.

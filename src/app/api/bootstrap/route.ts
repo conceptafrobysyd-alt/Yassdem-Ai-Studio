@@ -9,6 +9,7 @@ import { listProjects } from '@/lib/projects';
 import { listMedia } from '@/lib/media';
 import { publicJob } from '@/lib/jobs-public';
 import { getBudget } from '@/lib/jobs';
+import { getProviderRegistry } from '@/lib/providers/registry';
 import {
   RunwayProvider,
   RUNWAY_MODEL,
@@ -48,13 +49,15 @@ export async function GET(request: Request) {
           needsSetup: !settings.passwordHash,
           authenticated: false,
         });
-      const [projects, media, jobs, budget, available] = await Promise.all([
-        listProjects(),
-        listMedia(),
-        db.job.findMany({ orderBy: { createdAt: 'desc' } }),
-        getBudget(),
-        localAvailable(),
-      ]);
+      const [projects, media, jobs, budget, available, providerStatuses] =
+        await Promise.all([
+          listProjects(),
+          listMedia(),
+          db.job.findMany({ orderBy: { createdAt: 'desc' } }),
+          getBudget(),
+          localAvailable(),
+          getProviderRegistry(),
+        ]);
       return NextResponse.json({
         needsSetup: false,
         authenticated: true,
@@ -75,6 +78,10 @@ export async function GET(request: Request) {
             },
           },
           local: { available, costCents: 0, ai: false },
+          replicate: {
+            ...providerStatuses.find((provider) => provider.id === 'replicate'),
+            enabled: settings.replicateEnabled,
+          },
         },
       });
     },

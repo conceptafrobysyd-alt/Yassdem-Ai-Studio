@@ -18,6 +18,7 @@ export interface ProviderStatus {
   estimateCents?: number;
   estimateAssumption?: string;
   outputKind?: 'image' | 'video';
+  supportedModels?: string[];
 }
 
 /** Safe configuration metadata only: no token, endpoint, file path, provider
@@ -54,6 +55,7 @@ export async function getProviderRegistry(
       configured: true,
       connection: 'unchecked',
       model: 'ffmpeg',
+      supportedModels: ['ffmpeg'],
     },
     {
       id: 'runway',
@@ -61,6 +63,7 @@ export async function getProviderRegistry(
       configured: runway.configured,
       connection: 'unchecked',
       model: 'gen4_turbo',
+      supportedModels: ['gen4_turbo'],
     },
     {
       id: 'replicate',
@@ -76,6 +79,7 @@ export async function getProviderRegistry(
       ...(replicateConfig
         ? {
             model: replicateConfig.version,
+            supportedModels: [replicateConfig.version],
             estimateCents: replicateConfig.estimateCents,
             outputKind: replicateConfig.outputKind,
             estimateAssumption: REPLICATE_ESTIMATE_ASSUMPTION,
@@ -95,12 +99,22 @@ export async function getProviderRegistry(
         process.env.COMFYUI_TRYON_WORKFLOW,
       ),
       connection: 'unchecked',
+      supportedModels: [
+        ...(process.env.COMFYUI_FASHION_WORKFLOW ? ['fashion-image'] : []),
+        ...(process.env.COMFYUI_TRYON_WORKFLOW ? ['try-on'] : []),
+      ],
     },
     {
       id: 'ollama',
       capabilities: ['marketing-json'],
       configured: Boolean(ollama?.configured),
       connection: 'unchecked',
+      ...(ollama?.configured
+        ? {
+            model: process.env.OLLAMA_MODEL,
+            supportedModels: [process.env.OLLAMA_MODEL!],
+          }
+        : {}),
       ...(ollamaCode
         ? { code: ollamaCode }
         : !ollama?.configured

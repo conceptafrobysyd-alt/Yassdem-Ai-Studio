@@ -27,3 +27,11 @@ Le studio produit accepte une fiche Shopify via son API produit officielle, ou u
 L’import protège les destinations réseau, épingle le DNS public pour la connexion TLS et refuse les redirections. Il ne transmet aucun cookie ou secret. La description, les fichiers, le registre d’import et les références sont enregistrés ensemble ; un échec annule l’ensemble et nettoie les fichiers partiels. Les réessais reprennent la même demande.
 
 Le [guide d’import](PRODUCT_IMPORT.md) détaille les contrats et les limites. Les tests de transport utilisent des réponses DNS/HTTPS simulées avec de vrais fichiers et une vraie base. Sur ce cloud, une résolution DNS externe directe n’a pas abouti : aucun import depuis une boutique réelle n’est revendiqué. Le déploiement doit permettre les domaines de la boutique et de ses images ainsi qu’une connexion DNS/TLS compatible avec ces contrôles.
+
+## Catalogue des modèles et fournisseurs compatibles
+
+Le catalogue privé décrit les modèles et workflows pris en charge, leurs paramètres, leurs limites et leurs coûts indicatifs. Sa lecture ne lance aucun appel réseau, génération ou téléchargement de modèle. Il ne prétend pas constituer un inventaire des droits de votre compte fournisseur. Une configuration présente reste distincte d’un accès au modèle ou d’une inférence réussie.
+
+Le studio vidéo propose FFmpeg, Runway et le modèle Replicate configuré lorsqu’il produit de la vidéo. Le choix d’un modèle compatible sélectionne son fournisseur. Replicate conserve son formulaire adapté : description, image facultative, version immuable et réservation à confirmer. Les contrôles propres à Runway ou à un export local ne sont pas présentés comme paramètres natifs Replicate. Le résultat vidéo rejoint l’historique du projet et peut être réutilisé dans le montage.
+
+Replicate peut devenir le fournisseur vidéo préféré uniquement avec une configuration vidéo compatible. Cette préférence n’active pas le fournisseur et ne modifie pas le plafond financier. Un modèle d’image reste disponible dans son atelier de génération, sans être proposé comme moteur vidéo. Les modèles ComfyUI et Ollama restent liés aux workflows ou au modèle explicitement configurés par l’administrateur.

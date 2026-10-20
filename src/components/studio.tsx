@@ -65,6 +65,7 @@ import { BrandPresetsPanel } from './brand-presets-panel';
 import { ImageExportPanel } from './image-export-panel';
 import { StylePresetsPanel } from './style-presets-panel';
 import { ProductImportPanel } from './product-import-panel';
+import { ModelCatalogPanel } from './model-catalog-panel';
 import fr from '@/messages/fr';
 import en from '@/messages/en';
 type Locale = 'fr' | 'en';
@@ -139,6 +140,13 @@ type Snapshot = {
       costs: Record<string, { eurCents: number }>;
     };
     local: { available: boolean };
+    replicate?: {
+      configured: boolean;
+      enabled: boolean;
+      outputKind?: 'image' | 'video';
+      model?: string;
+      estimateCents?: number;
+    };
   };
   budget?: {
     actualCostCents: number;
@@ -356,12 +364,18 @@ function StudioApp({
     source = media.find((m) => m.id === parameters.sourceMediaId),
     projectJobs = jobs.filter(
       (j) =>
-        j.projectId === selectedId && ['generation', 'export'].includes(j.kind),
+        j.projectId === selectedId &&
+        (['generation', 'export'].includes(j.kind) ||
+          (j.kind === 'replicate' && j.parameters.outputKind === 'video')),
     ),
     spent = snapshot?.budget?.actualCostCents || 0,
     reserved = snapshot?.budget?.reservedCents || 0,
     committed = spent + reserved,
     pending = jobs.some((j) => ACTIVE.includes(j.status));
+  const replicateVideoReady = Boolean(
+    snapshot?.providers?.replicate?.configured &&
+    snapshot.providers.replicate.outputKind === 'video',
+  );
   const money = (cents: number) =>
     new Intl.NumberFormat(locale === 'fr' ? 'fr-FR' : 'en-GB', {
       style: 'currency',
@@ -1223,32 +1237,54 @@ function StudioApp({
                       }
                     }}
                   />
-                  <section className="panel">
-                    <div className="panel-heading">
-                      <h2>
-                        <Sparkles size={17} />
-                        {t('prompt')}
-                      </h2>
-                      <span className="muted small-text">{t('optional')}</span>
-                    </div>
-                    <div className="panel-body">
-                      <textarea
-                        disabled={parameters.provider === 'local'}
-                        className="input prompt-textarea"
-                        value={parameters.prompt}
-                        onChange={(e) => setParam('prompt', e.target.value)}
-                        placeholder={t('promptPlaceholder')}
-                        maxLength={900}
-                      />
-                      <p className="field-hint">
-                        {t(
-                          parameters.provider === 'local'
-                            ? 'localExplanation'
-                            : 'runwayExplanation',
-                        )}
-                      </p>
-                    </div>
-                  </section>
+                  {parameters.provider !== 'replicate' && (
+                    <section className="panel">
+                      <div className="panel-heading">
+                        <h2>
+                          <Sparkles size={17} />
+                          {t('prompt')}
+                        </h2>
+                        <span className="muted small-text">
+                          {t('optional')}
+                        </span>
+                      </div>
+                      <div className="panel-body">
+                        <textarea
+                          disabled={parameters.provider === 'local'}
+                          className="input prompt-textarea"
+                          value={parameters.prompt}
+                          onChange={(e) => setParam('prompt', e.target.value)}
+                          placeholder={t('promptPlaceholder')}
+                          maxLength={900}
+                        />
+                        <p className="field-hint">
+                          {t(
+                            parameters.provider === 'local'
+                              ? 'localExplanation'
+                              : 'runwayExplanation',
+                          )}
+                        </p>
+                      </div>
+                    </section>
+                  )}
+                  <ModelCatalogPanel
+                    locale={locale}
+                    outputKind="video"
+                    onSelectModel={(model) => {
+                      if (
+                        ['local', 'runway', 'replicate'].includes(
+                          model.provider,
+                        )
+                      ) {
+                        setParam('provider', model.provider);
+                        if (
+                          model.provider === 'runway' &&
+                          parameters.duration > 10
+                        )
+                          setParam('duration', 10);
+                      }
+                    }}
+                  />
                   <section className="panel jobs-panel">
                     <div className="panel-heading">
                       <h2>
@@ -1284,7 +1320,11 @@ function StudioApp({
                             </span>
                             <div className="job-info">
                               <strong>
-                                {job.provider === 'local' ? 'FFmpeg' : 'Runway'}{' '}
+                                {job.provider === 'local'
+                                  ? 'FFmpeg'
+                                  : job.provider === 'replicate'
+                                    ? 'Replicate'
+                                    : 'Runway'}{' '}
                                 <span>· {date(job.createdAt)}</span>
                               </strong>
                               <span>
@@ -1393,6 +1433,12 @@ function StudioApp({
                       >
                         <option value="local">{t('providerLocal')}</option>
                         <option value="runway">{t('providerRunway')}</option>
+                        <option
+                          value="replicate"
+                          disabled={!replicateVideoReady}
+                        >
+                          {t('providerReplicate')}
+                        </option>
                       </Select>
                     </Field>
                     <div className="provider-hint">
@@ -1406,218 +1452,97 @@ function StudioApp({
                       {t(
                         parameters.provider === 'local'
                           ? 'freeLocal'
-                          : snapshot.providers?.runway.configured &&
-                              settings.providerEnabled
-                            ? 'enabled'
-                            : 'providerNotReady',
+                          : parameters.provider === 'replicate'
+                            ? snapshot.providers?.replicate?.configured &&
+                              settings.replicateEnabled
+                              ? 'enabled'
+                              : 'providerNotReady'
+                            : snapshot.providers?.runway.configured &&
+                                settings.providerEnabled
+                              ? 'enabled'
+                              : 'providerNotReady',
                       )}
                     </div>
-                    {parameters.provider === 'local' && (
-                      <p className="field-hint">{t('runwayOnlyControls')}</p>
-                    )}
-                    <Field label={t('preset')}>
-                      <Select
-                        disabled={parameters.provider === 'local'}
-                        value={parameters.preset}
-                        onChange={(e) => setParam('preset', e.target.value)}
-                      >
-                        {[
-                          ['luxury', 'presetLuxury'],
-                          ['minimal', 'presetMinimal'],
-                          ['handbag', 'presetHandbag'],
-                          ['shoes', 'presetShoes'],
-                          ['accessories', 'presetAccessories'],
-                          ['pinterest', 'presetPinterest'],
-                        ].map(([value, key]) => (
-                          <option key={value} value={value}>
-                            {t(key)}
-                          </option>
-                        ))}
-                      </Select>
-                    </Field>
-                    <div className="field-pair">
-                      <Field label={t('decor')}>
-                        <Select
-                          disabled={parameters.provider === 'local'}
-                          value={parameters.decor}
-                          onChange={(e) => setParam('decor', e.target.value)}
-                        >
-                          {[
-                            ['cream', 'decorStudio'],
-                            ['dark', 'decorDark'],
-                            ['natural', 'decorNatural'],
-                            ['marble', 'decorMarble'],
-                          ].map(([v, k]) => (
-                            <option value={v} key={v}>
-                              {t(k)}
-                            </option>
-                          ))}
-                        </Select>
-                      </Field>
-                      <Field label={t('camera')}>
-                        <Select
-                          disabled={parameters.provider === 'local'}
-                          value={parameters.camera}
-                          onChange={(e) => setParam('camera', e.target.value)}
-                        >
-                          {[
-                            ['zoom-in', 'cameraZoom'],
-                            ['zoom-out', 'cameraZoomOut'],
-                            ['pan', 'cameraPan'],
-                            ['static', 'cameraStatic'],
-                          ].map(([v, k]) => (
-                            <option key={v} value={v}>
-                              {t(k)}
-                            </option>
-                          ))}
-                        </Select>
-                      </Field>
-                    </div>
-                    <Field label={t('format')}>
-                      <div className="format-grid">
-                        {[
-                          ['9:16', 'vertical'],
-                          ['4:5', 'portrait'],
-                          ['1:1', 'square'],
-                          ['16:9', 'landscape'],
-                        ].map(([value, key]) => (
-                          <button
-                            key={value}
-                            className={cn(
-                              'format-option',
-                              parameters.format === value && 'active',
-                            )}
-                            onClick={() => setParam('format', value)}
+                    {parameters.provider === 'replicate' ? (
+                      <>
+                        <p className="field-hint">
+                          {t('replicateVideoControls')}
+                        </p>
+                        <ProvidersPanel
+                          locale={locale}
+                          projects={projects}
+                          media={media}
+                          jobs={jobs}
+                          settings={settings}
+                          onUpdateSettings={updateSettings}
+                          onRefresh={reload}
+                          generationOnly
+                          outputKind="video"
+                          initialProjectId={project.id}
+                          initialSourceMediaId={parameters.sourceMediaId}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        {parameters.provider === 'local' && (
+                          <p className="field-hint">
+                            {t('runwayOnlyControls')}
+                          </p>
+                        )}
+                        <Field label={t('preset')}>
+                          <Select
+                            disabled={parameters.provider === 'local'}
+                            value={parameters.preset}
+                            onChange={(e) => setParam('preset', e.target.value)}
                           >
-                            <span
-                              className="format-shape"
-                              style={{ aspectRatio: value.replace(':', '/') }}
-                            />
-                            <strong>{value}</strong>
-                            <small>{t(key)}</small>
-                          </button>
-                        ))}
-                      </div>
-                    </Field>
-                    <div className="field-pair">
-                      <Field label={t('duration')}>
-                        <Select
-                          value={parameters.duration}
-                          onChange={(e) =>
-                            setParam('duration', Number(e.target.value))
-                          }
-                        >
-                          {(parameters.provider === 'runway'
-                            ? [5, 10]
-                            : [5, 10, 15]
-                          ).map((n) => (
-                            <option value={n} key={n}>
-                              {t('seconds', { value: n })}
-                            </option>
-                          ))}
-                        </Select>
-                      </Field>
-                      <Field label={t('resolution')}>
-                        <Select
-                          value={parameters.resolution}
-                          onChange={(e) =>
-                            setParam('resolution', Number(e.target.value))
-                          }
-                        >
-                          {[720, 1080, 1440, 2160].map((n) => (
-                            <option key={n} value={n}>
-                              {n}p{n === 2160 ? ' · 4K' : ''}
-                            </option>
-                          ))}
-                        </Select>
-                      </Field>
-                    </div>
-                    <div className="source-resolution">
-                      <Monitor size={14} />
-                      <span>
-                        {source
-                          ? t('sourceDimensions', {
-                              width: source.width || 0,
-                              height: source.height || 0,
-                            })
-                          : t('sourceUnknown')}
-                      </span>
-                    </div>
-                    {parameters.resolution > 720 && (
-                      <p className="inline-notice">
-                        <ScanLine size={16} />
-                        {t('upscaleNotice')}
-                      </p>
-                    )}
-                    <details className="advanced-settings">
-                      <summary>
-                        {t('exportQuality')}
-                        <ChevronDown size={15} />
-                      </summary>
-                      <Field label={t('codec')}>
-                        <Select
-                          value={parameters.codec}
-                          onChange={(e) => setParam('codec', e.target.value)}
-                        >
-                          <option value="h264">H.264</option>
-                          <option value="h265">H.265</option>
-                        </Select>
-                      </Field>
-                      <Field label={t('compression')}>
-                        <Select
-                          value={parameters.quality}
-                          onChange={(e) => setParam('quality', e.target.value)}
-                        >
-                          <option value="high">{t('compressionHigh')}</option>
-                          <option value="balanced">
-                            {t('compressionBalanced')}
-                          </option>
-                          <option value="compressed">
-                            {t('compressionSmall')}
-                          </option>
-                        </Select>
-                      </Field>
-                      <p className="field-hint">
-                        {t('estimatedSize')} : ~
-                        {estimatedMegabytes(parameters).toFixed(1)} MB
-                      </p>
-                      <p className="field-hint">{t('compressionNote')}</p>
-                    </details>
-                    <details className="advanced-settings">
-                      <summary>
-                        {t('brandKit')}
-                        <ChevronDown size={15} />
-                      </summary>
-                      <Field label={t('logo')}>
-                        <Select
-                          value={parameters.logoMediaId}
-                          onChange={(e) =>
-                            setParam('logoMediaId', e.target.value)
-                          }
-                        >
-                          <option value="">{t('noLogo')}</option>
-                          {logos.map((logo) => (
-                            <option key={logo.id} value={logo.id}>
-                              {logo.name}
-                            </option>
-                          ))}
-                        </Select>
-                      </Field>
-                      {parameters.logoMediaId && (
-                        <>
-                          <Field label={t('logoPosition')}>
+                            {[
+                              ['luxury', 'presetLuxury'],
+                              ['minimal', 'presetMinimal'],
+                              ['handbag', 'presetHandbag'],
+                              ['shoes', 'presetShoes'],
+                              ['accessories', 'presetAccessories'],
+                              ['pinterest', 'presetPinterest'],
+                            ].map(([value, key]) => (
+                              <option key={value} value={value}>
+                                {t(key)}
+                              </option>
+                            ))}
+                          </Select>
+                        </Field>
+                        <div className="field-pair">
+                          <Field label={t('decor')}>
                             <Select
-                              value={parameters.logoPosition}
+                              disabled={parameters.provider === 'local'}
+                              value={parameters.decor}
                               onChange={(e) =>
-                                setParam('logoPosition', e.target.value)
+                                setParam('decor', e.target.value)
                               }
                             >
                               {[
-                                ['bottom-right', 'bottomRight'],
-                                ['bottom-left', 'bottomLeft'],
-                                ['top-right', 'topRight'],
-                                ['top-left', 'topLeft'],
-                                ['center', 'center'],
+                                ['cream', 'decorStudio'],
+                                ['dark', 'decorDark'],
+                                ['natural', 'decorNatural'],
+                                ['marble', 'decorMarble'],
+                              ].map(([v, k]) => (
+                                <option value={v} key={v}>
+                                  {t(k)}
+                                </option>
+                              ))}
+                            </Select>
+                          </Field>
+                          <Field label={t('camera')}>
+                            <Select
+                              disabled={parameters.provider === 'local'}
+                              value={parameters.camera}
+                              onChange={(e) =>
+                                setParam('camera', e.target.value)
+                              }
+                            >
+                              {[
+                                ['zoom-in', 'cameraZoom'],
+                                ['zoom-out', 'cameraZoomOut'],
+                                ['pan', 'cameraPan'],
+                                ['static', 'cameraStatic'],
                               ].map(([v, k]) => (
                                 <option key={v} value={v}>
                                   {t(k)}
@@ -1625,170 +1550,341 @@ function StudioApp({
                               ))}
                             </Select>
                           </Field>
-                          <div className="field-pair">
-                            <Field
-                              label={`${t('logoSize')} · ${parameters.logoSize}%`}
-                            >
-                              <input
-                                type="range"
-                                min={5}
-                                max={40}
-                                value={parameters.logoSize}
-                                onChange={(e) =>
-                                  setParam('logoSize', Number(e.target.value))
-                                }
-                              />
-                            </Field>
-                            <Field
-                              label={`${t('opacity')} · ${Math.round(parameters.logoOpacity * 100)}%`}
-                            >
-                              <input
-                                type="range"
-                                min={0.05}
-                                max={1}
-                                step={0.05}
-                                value={parameters.logoOpacity}
-                                onChange={(e) =>
-                                  setParam(
-                                    'logoOpacity',
-                                    Number(e.target.value),
-                                  )
-                                }
-                              />
-                            </Field>
+                        </div>
+                        <Field label={t('format')}>
+                          <div className="format-grid">
+                            {[
+                              ['9:16', 'vertical'],
+                              ['4:5', 'portrait'],
+                              ['1:1', 'square'],
+                              ['16:9', 'landscape'],
+                            ].map(([value, key]) => (
+                              <button
+                                key={value}
+                                className={cn(
+                                  'format-option',
+                                  parameters.format === value && 'active',
+                                )}
+                                onClick={() => setParam('format', value)}
+                              >
+                                <span
+                                  className="format-shape"
+                                  style={{
+                                    aspectRatio: value.replace(':', '/'),
+                                  }}
+                                />
+                                <strong>{value}</strong>
+                                <small>{t(key)}</small>
+                              </button>
+                            ))}
                           </div>
-                          <Field label={t('logoAnimation')}>
-                            <Select
-                              value={parameters.logoAnimation}
-                              onChange={(e) =>
-                                setParam('logoAnimation', e.target.value)
-                              }
-                            >
-                              <option value="none">{t('none')}</option>
-                              <option value="fade">{t('fade')}</option>
-                            </Select>
-                          </Field>
-                          <Field label={t('logoTiming')}>
-                            <Select
-                              value={parameters.logoTiming || 'all'}
-                              onChange={(e) =>
-                                setParam('logoTiming', e.target.value)
-                              }
-                            >
-                              <option value="all">{t('logoAll')}</option>
-                              <option value="start">{t('logoStart')}</option>
-                              <option value="end">{t('logoEnd')}</option>
-                            </Select>
-                          </Field>
-                        </>
-                      )}
-                    </details>
-                    <details className="advanced-settings">
-                      <summary>
-                        {t('styles')}
-                        <ChevronDown size={15} />
-                      </summary>
-                      <p className="field-hint">{t('futureStyleNote')}</p>
-                      {[
-                        ['fit', 'styleFit'],
-                        ['colors', 'styleColors'],
-                        ['accessories', 'styleAccessories'],
-                        ['coverage', 'styleCoverage'],
-                        ['mood', 'styleMood'],
-                        ['body', 'styleBody'],
-                      ].map(([key, label]) => (
-                        <Field key={key} label={t(label)}>
-                          <Input
-                            value={parameters.stylePreferences?.[key] || ''}
-                            onChange={(e) =>
-                              setParam('stylePreferences', {
-                                ...parameters.stylePreferences,
-                                [key]: e.target.value,
-                              })
-                            }
-                          />
                         </Field>
-                      ))}
-                    </details>
-                  </div>
-                  <div className="generate-footer">
-                    <div className="estimate-row">
-                      <span>{t('estimate')}</span>
-                      <strong>
-                        {parameters.provider === 'local'
-                          ? money(0)
-                          : estimated !== null
-                            ? money(estimated)
-                            : '—'}
-                      </strong>
-                    </div>
-                    {parameters.provider === 'runway' && (
-                      <>
-                        <Button
-                          variant="secondary"
-                          className="full-width"
-                          disabled={!!busy}
-                          onClick={() => {
-                            const price =
-                              snapshot.providers?.runway.costs[
-                                String(parameters.duration)
-                              ];
-                            setEstimated(
-                              price?.eurCents ??
-                                Math.ceil(
-                                  parameters.duration * 5 * settings.usdToEur,
-                                ),
-                            );
-                          }}
-                        >
-                          {t('estimateButton')}
-                        </Button>
-                        <p className="field-hint">{t('costDisclaimer')}</p>
-                        <p className="field-hint">
-                          {t('pricingAssumption', {
-                            rate:
-                              snapshot.settings?.usdToEur ?? settings.usdToEur,
-                          })}
-                        </p>
+                        <div className="field-pair">
+                          <Field label={t('duration')}>
+                            <Select
+                              value={parameters.duration}
+                              onChange={(e) =>
+                                setParam('duration', Number(e.target.value))
+                              }
+                            >
+                              {(parameters.provider === 'runway'
+                                ? [5, 10]
+                                : [5, 10, 15]
+                              ).map((n) => (
+                                <option value={n} key={n}>
+                                  {t('seconds', { value: n })}
+                                </option>
+                              ))}
+                            </Select>
+                          </Field>
+                          <Field label={t('resolution')}>
+                            <Select
+                              value={parameters.resolution}
+                              onChange={(e) =>
+                                setParam('resolution', Number(e.target.value))
+                              }
+                            >
+                              {[720, 1080, 1440, 2160].map((n) => (
+                                <option key={n} value={n}>
+                                  {n}p{n === 2160 ? ' · 4K' : ''}
+                                </option>
+                              ))}
+                            </Select>
+                          </Field>
+                        </div>
+                        <div className="source-resolution">
+                          <Monitor size={14} />
+                          <span>
+                            {source
+                              ? t('sourceDimensions', {
+                                  width: source.width || 0,
+                                  height: source.height || 0,
+                                })
+                              : t('sourceUnknown')}
+                          </span>
+                        </div>
+                        {parameters.resolution > 720 && (
+                          <p className="inline-notice">
+                            <ScanLine size={16} />
+                            {t('upscaleNotice')}
+                          </p>
+                        )}
+                        <details className="advanced-settings">
+                          <summary>
+                            {t('exportQuality')}
+                            <ChevronDown size={15} />
+                          </summary>
+                          <Field label={t('codec')}>
+                            <Select
+                              value={parameters.codec}
+                              onChange={(e) =>
+                                setParam('codec', e.target.value)
+                              }
+                            >
+                              <option value="h264">H.264</option>
+                              <option value="h265">H.265</option>
+                            </Select>
+                          </Field>
+                          <Field label={t('compression')}>
+                            <Select
+                              value={parameters.quality}
+                              onChange={(e) =>
+                                setParam('quality', e.target.value)
+                              }
+                            >
+                              <option value="high">
+                                {t('compressionHigh')}
+                              </option>
+                              <option value="balanced">
+                                {t('compressionBalanced')}
+                              </option>
+                              <option value="compressed">
+                                {t('compressionSmall')}
+                              </option>
+                            </Select>
+                          </Field>
+                          <p className="field-hint">
+                            {t('estimatedSize')} : ~
+                            {estimatedMegabytes(parameters).toFixed(1)} MB
+                          </p>
+                          <p className="field-hint">{t('compressionNote')}</p>
+                        </details>
+                        <details className="advanced-settings">
+                          <summary>
+                            {t('brandKit')}
+                            <ChevronDown size={15} />
+                          </summary>
+                          <Field label={t('logo')}>
+                            <Select
+                              value={parameters.logoMediaId}
+                              onChange={(e) =>
+                                setParam('logoMediaId', e.target.value)
+                              }
+                            >
+                              <option value="">{t('noLogo')}</option>
+                              {logos.map((logo) => (
+                                <option key={logo.id} value={logo.id}>
+                                  {logo.name}
+                                </option>
+                              ))}
+                            </Select>
+                          </Field>
+                          {parameters.logoMediaId && (
+                            <>
+                              <Field label={t('logoPosition')}>
+                                <Select
+                                  value={parameters.logoPosition}
+                                  onChange={(e) =>
+                                    setParam('logoPosition', e.target.value)
+                                  }
+                                >
+                                  {[
+                                    ['bottom-right', 'bottomRight'],
+                                    ['bottom-left', 'bottomLeft'],
+                                    ['top-right', 'topRight'],
+                                    ['top-left', 'topLeft'],
+                                    ['center', 'center'],
+                                  ].map(([v, k]) => (
+                                    <option key={v} value={v}>
+                                      {t(k)}
+                                    </option>
+                                  ))}
+                                </Select>
+                              </Field>
+                              <div className="field-pair">
+                                <Field
+                                  label={`${t('logoSize')} · ${parameters.logoSize}%`}
+                                >
+                                  <input
+                                    type="range"
+                                    min={5}
+                                    max={40}
+                                    value={parameters.logoSize}
+                                    onChange={(e) =>
+                                      setParam(
+                                        'logoSize',
+                                        Number(e.target.value),
+                                      )
+                                    }
+                                  />
+                                </Field>
+                                <Field
+                                  label={`${t('opacity')} · ${Math.round(parameters.logoOpacity * 100)}%`}
+                                >
+                                  <input
+                                    type="range"
+                                    min={0.05}
+                                    max={1}
+                                    step={0.05}
+                                    value={parameters.logoOpacity}
+                                    onChange={(e) =>
+                                      setParam(
+                                        'logoOpacity',
+                                        Number(e.target.value),
+                                      )
+                                    }
+                                  />
+                                </Field>
+                              </div>
+                              <Field label={t('logoAnimation')}>
+                                <Select
+                                  value={parameters.logoAnimation}
+                                  onChange={(e) =>
+                                    setParam('logoAnimation', e.target.value)
+                                  }
+                                >
+                                  <option value="none">{t('none')}</option>
+                                  <option value="fade">{t('fade')}</option>
+                                </Select>
+                              </Field>
+                              <Field label={t('logoTiming')}>
+                                <Select
+                                  value={parameters.logoTiming || 'all'}
+                                  onChange={(e) =>
+                                    setParam('logoTiming', e.target.value)
+                                  }
+                                >
+                                  <option value="all">{t('logoAll')}</option>
+                                  <option value="start">
+                                    {t('logoStart')}
+                                  </option>
+                                  <option value="end">{t('logoEnd')}</option>
+                                </Select>
+                              </Field>
+                            </>
+                          )}
+                        </details>
+                        <details className="advanced-settings">
+                          <summary>
+                            {t('styles')}
+                            <ChevronDown size={15} />
+                          </summary>
+                          <p className="field-hint">{t('futureStyleNote')}</p>
+                          {[
+                            ['fit', 'styleFit'],
+                            ['colors', 'styleColors'],
+                            ['accessories', 'styleAccessories'],
+                            ['coverage', 'styleCoverage'],
+                            ['mood', 'styleMood'],
+                            ['body', 'styleBody'],
+                          ].map(([key, label]) => (
+                            <Field key={key} label={t(label)}>
+                              <Input
+                                value={parameters.stylePreferences?.[key] || ''}
+                                onChange={(e) =>
+                                  setParam('stylePreferences', {
+                                    ...parameters.stylePreferences,
+                                    [key]: e.target.value,
+                                  })
+                                }
+                              />
+                            </Field>
+                          ))}
+                        </details>
                       </>
                     )}
-                    <Button
-                      className="full-width generate-button"
-                      disabled={
-                        !!busy ||
-                        !source ||
-                        (parameters.provider === 'runway' &&
-                          (!settings.providerEnabled ||
-                            !snapshot.providers?.runway.configured ||
-                            !settings.monthlyBudgetCents ||
-                            estimated === null))
-                      }
-                      onClick={() =>
-                        parameters.provider === 'runway'
-                          ? setModal('paid')
-                          : action('generate', () => generate())
-                      }
-                    >
-                      {busy === 'generate' ? (
-                        <LoaderCircle className="spin" size={17} />
-                      ) : (
-                        <Sparkles size={17} />
-                      )}{' '}
-                      {t(
-                        parameters.provider === 'local'
-                          ? 'generateFree'
-                          : 'generate',
-                      )}
-                    </Button>
-                    <p className="generation-note">
-                      <ShieldCheck size={12} />
-                      {t(
-                        parameters.provider === 'local'
-                          ? 'freeLocal'
-                          : 'budgetNote',
-                      )}
-                    </p>
                   </div>
+                  {parameters.provider !== 'replicate' && (
+                    <div className="generate-footer">
+                      <div className="estimate-row">
+                        <span>{t('estimate')}</span>
+                        <strong>
+                          {parameters.provider === 'local'
+                            ? money(0)
+                            : estimated !== null
+                              ? money(estimated)
+                              : '—'}
+                        </strong>
+                      </div>
+                      {parameters.provider === 'runway' && (
+                        <>
+                          <Button
+                            variant="secondary"
+                            className="full-width"
+                            disabled={!!busy}
+                            onClick={() => {
+                              const price =
+                                snapshot.providers?.runway.costs[
+                                  String(parameters.duration)
+                                ];
+                              setEstimated(
+                                price?.eurCents ??
+                                  Math.ceil(
+                                    parameters.duration * 5 * settings.usdToEur,
+                                  ),
+                              );
+                            }}
+                          >
+                            {t('estimateButton')}
+                          </Button>
+                          <p className="field-hint">{t('costDisclaimer')}</p>
+                          <p className="field-hint">
+                            {t('pricingAssumption', {
+                              rate:
+                                snapshot.settings?.usdToEur ??
+                                settings.usdToEur,
+                            })}
+                          </p>
+                        </>
+                      )}
+                      <Button
+                        className="full-width generate-button"
+                        disabled={
+                          !!busy ||
+                          !source ||
+                          (parameters.provider === 'runway' &&
+                            (!settings.providerEnabled ||
+                              !snapshot.providers?.runway.configured ||
+                              !settings.monthlyBudgetCents ||
+                              estimated === null))
+                        }
+                        onClick={() =>
+                          parameters.provider === 'runway'
+                            ? setModal('paid')
+                            : action('generate', () => generate())
+                        }
+                      >
+                        {busy === 'generate' ? (
+                          <LoaderCircle className="spin" size={17} />
+                        ) : (
+                          <Sparkles size={17} />
+                        )}{' '}
+                        {t(
+                          parameters.provider === 'local'
+                            ? 'generateFree'
+                            : 'generate',
+                        )}
+                      </Button>
+                      <p className="generation-note">
+                        <ShieldCheck size={12} />
+                        {t(
+                          parameters.provider === 'local'
+                            ? 'freeLocal'
+                            : 'budgetNote',
+                        )}
+                      </p>
+                    </div>
+                  )}
                 </aside>
               </div>
             ))}
@@ -1995,6 +2091,9 @@ function StudioApp({
                     >
                       <option value="local">{t('providerLocal')}</option>
                       <option value="runway">{t('providerRunway')}</option>
+                      <option value="replicate" disabled={!replicateVideoReady}>
+                        {t('providerReplicate')}
+                      </option>
                     </Select>
                   </Field>
                   <div className="field-pair">
@@ -2245,6 +2344,7 @@ function StudioApp({
                   onUpdateSettings={updateSettings}
                   onRefresh={reload}
                 />
+                <ModelCatalogPanel locale={locale} />
                 <SettingsPanel
                   icon={<Palette size={18} />}
                   title={t('brandKit')}

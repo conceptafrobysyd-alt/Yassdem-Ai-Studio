@@ -37,7 +37,7 @@ Ce document distingue le fonctionnement local livré, les intégrations qui exig
 | Compression vidéo                         | Réglages qualité élevée/équilibré/fichier léger transmis à FFmpeg (CRF 18/21/28), enregistrés et figés dans les tâches ; poids final dépendant du contenu et du codec                         |
 | Moment du logo vidéo                      | Superposition sur toute la vidéo, les deux premières ou les deux dernières secondes au maximum, avec fondu facultatif ; aucun carton séparé ajouté                                            |
 
-## Exigences V1.1 partiellement couvertes
+## Comportement et limites des exigences V1.1
 
 Les styles peuvent être combinés et enregistrés avec leurs propres paramètres : coupe, longueur, couleurs, accessoires, superpositions, couverture, ambiance, décor, pose et caractéristiques souhaitées. Leur application dans un look est explicite et ne modifie ni le profil ni le hijab. Les valeurs sont copiées dans les looks et les tâches ; modifier un style ne change pas les résultats existants. Ces descriptions sont transmises aux workflows ComfyUI configurés ; leur respect dépend du moteur et des modèles. Leur enregistrement ou une planche locale ne réalisent pas un essayage virtuel.
 
@@ -50,6 +50,8 @@ La duplication d'un projet copie les fichiers et remappe les références des pa
 Les exports vidéo permettent le redimensionnement jusqu’à 2160 pour le petit côté. L’export d’image propose les dimensions natives ou un côté long de 3840 pixels ; les deux conventions sont indiquées dans leurs ateliers. L’agrandissement est signalé : ni la génération native 4K chez un fournisseur, ni l’upscaling IA ne sont promis. Le résultat dépend de la qualité de la source et des ressources de la machine.
 
 Les parcours locaux fonctionnent sans fournisseur externe. La génération Runway demande un essai réel autorisé avec votre compte. Les images éditoriales et l'essayage demandent ComfyUI, les modèles et les workflows correspondants. Les tests de protocole simulés ne sont pas présentés comme des générations IA produites. Consultez le [guide Fashion et ComfyUI](PHASE_3.md) pour les contrats et limitations.
+
+Le catalogue présente les modèles et workflows supportés/configurés, leurs paramètres et coûts indicatifs, sans inventaire supposé des accès du compte. Le studio vidéo sélectionne FFmpeg, Runway ou un modèle Replicate vidéo compatible ; ce dernier peut être enregistré comme préférence sans activation payante. Les modèles d’image ne sont pas présentés comme moteurs vidéo.
 
 ## Éléments non intégrés
 

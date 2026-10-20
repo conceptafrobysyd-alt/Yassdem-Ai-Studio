@@ -27,6 +27,7 @@ type ProviderJob = {
   reservedCents?: number;
   errorCode?: string | null;
   createdAt: string | Date;
+  parameters?: Record<string, unknown>;
 };
 export type ProvidersPanelProps = {
   locale: 'fr' | 'en';
@@ -36,6 +37,10 @@ export type ProvidersPanelProps = {
   settings: { replicateEnabled: boolean; monthlyBudgetCents: number };
   onUpdateSettings: (patch: { replicateEnabled: boolean }) => Promise<unknown>;
   onRefresh: () => Promise<unknown>;
+  initialProjectId?: string;
+  initialSourceMediaId?: string;
+  outputKind?: 'image' | 'video';
+  generationOnly?: boolean;
 };
 class RequestError extends Error {
   constructor(
@@ -74,14 +79,22 @@ export function ProvidersPanel({
   settings,
   onUpdateSettings,
   onRefresh,
+  initialProjectId,
+  initialSourceMediaId,
+  outputKind,
+  generationOnly = false,
 }: ProvidersPanelProps) {
   const t = providerMessages[locale];
   const [providers, setProviders] = useState<ProviderStatus[]>([]);
   const [checking, setChecking] = useState(false);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [projectId, setProjectId] = useState(projects[0]?.id ?? '');
-  const [sourceMediaId, setSourceMediaId] = useState('');
+  const [projectId, setProjectId] = useState(
+    initialProjectId || projects[0]?.id || '',
+  );
+  const [sourceMediaId, setSourceMediaId] = useState(
+    initialSourceMediaId || '',
+  );
   const [prompt, setPrompt] = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const [pendingRequest, setPendingRequest] = useState(false);
@@ -142,6 +155,27 @@ export function ProvidersPanel({
       setProjectId(projects[0]?.id ?? '');
   }, [projects, projectId, pendingRequest, accepted]);
   useEffect(() => {
+    if (submitting || pendingRequest) return;
+    const nextProject =
+      initialProjectId &&
+      projects.some((project) => project.id === initialProjectId)
+        ? initialProjectId
+        : undefined;
+    if (
+      (nextProject && nextProject !== projectId) ||
+      (initialSourceMediaId !== undefined &&
+        initialSourceMediaId !== sourceMediaId)
+    ) {
+      if (nextProject) setProjectId(nextProject);
+      if (initialSourceMediaId !== undefined)
+        setSourceMediaId(initialSourceMediaId);
+      setAccepted(false);
+      setConfirmed(false);
+      requestKey.current = null;
+      requestBody.current = null;
+    }
+  }, [initialProjectId, initialSourceMediaId, submitting, pendingRequest]);
+  useEffect(() => {
     setLocalJobs((previous) =>
       previous.filter(
         (job) =>
@@ -161,9 +195,18 @@ export function ProvidersPanel({
         job.provider === 'replicate' &&
         !localJobs.some((local) => local.id === job.id),
     ),
-  ].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  ]
+    .filter((job) => {
+      if (generationOnly && job.projectId !== projectId) return false;
+      if (!outputKind) return true;
+      if (job.parameters?.outputKind === outputKind) return true;
+      const output = media.find((item) => item.id === job.outputMediaId);
+      return output?.mimeType.startsWith(`${outputKind}/`) ?? false;
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
   const needsPolling = providerJobs.some((job) =>
     activeStatuses.includes(job.status),
   );
@@ -175,13 +218,17 @@ export function ProvidersPanel({
     return () => clearInterval(timer);
   }, [needsPolling]);
   const replicate = providers.find((provider) => provider.id === 'replicate');
+  const compatibleKind = !outputKind || replicate?.outputKind === outputKind;
   const locked = submitting || pendingRequest || accepted;
   const enoughCeiling = Boolean(
     replicate?.estimateCents &&
     settings.monthlyBudgetCents >= replicate.estimateCents,
   );
   const ready = Boolean(
-    replicate?.configured && settings.replicateEnabled && enoughCeiling,
+    replicate?.configured &&
+    compatibleKind &&
+    settings.replicateEnabled &&
+    enoughCeiling,
   );
   useEffect(() => {
     if (!pendingRequest) setConfirmed(false);
@@ -324,26 +371,32 @@ export function ProvidersPanel({
       UNKNOWN: t.unknown,
     })[status] ?? status;
   return (
-    <section className="providers-panel panel">
-      <div className="panel-heading">
-        <div>
-          <h2>{t.title}</h2>
-          <p className="providers-muted">{t.subtitle}</p>
-        </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={check}
-          disabled={checking || submitting || pendingRequest}
-        >
-          {checking ? (
-            <LoaderCircle size={14} className="spin" />
-          ) : (
-            <RefreshCw size={14} />
-          )}
-          {t.check}
-        </Button>
-      </div>
+    <section
+      className={`providers-panel panel${generationOnly ? ' providers-generation-only' : ''}`}
+    >
+      {!generationOnly && (
+        <>
+          <div className="panel-heading">
+            <div>
+              <h2>{t.title}</h2>
+              <p className="providers-muted">{t.subtitle}</p>
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={check}
+              disabled={checking || submitting || pendingRequest}
+            >
+              {checking ? (
+                <LoaderCircle size={14} className="spin" />
+              ) : (
+                <RefreshCw size={14} />
+              )}
+              {t.check}
+            </Button>
+          </div>
+        </>
+      )}
       <div className="panel-body">
         {error && (
           <p className="providers-alert providers-error" role="alert">
@@ -355,69 +408,73 @@ export function ProvidersPanel({
             {notice}
           </p>
         )}
-        <div className="providers-grid">
-          {providers.map((provider) => (
-            <div className="provider-card" key={provider.id}>
-              <div>
-                <strong>
-                  {provider.id === 'local'
-                    ? 'FFmpeg'
-                    : provider.id === 'comfyui'
-                      ? 'ComfyUI'
-                      : provider.id === 'ollama'
-                        ? 'Ollama'
-                        : provider.id === 'runway'
-                          ? 'Runway'
-                          : 'Replicate'}
-                </strong>
-                <Badge
-                  tone={
-                    provider.connection === 'connected'
-                      ? 'success'
-                      : provider.configured
-                        ? 'brand'
-                        : 'muted'
-                  }
-                >
-                  {!provider.configured
-                    ? t.missing
-                    : provider.connection === 'connected'
-                      ? t.connected
+        {!generationOnly && (
+          <>
+            <div className="providers-grid">
+              {providers.map((provider) => (
+                <div className="provider-card" key={provider.id}>
+                  <div>
+                    <strong>
+                      {provider.id === 'local'
+                        ? 'FFmpeg'
+                        : provider.id === 'comfyui'
+                          ? 'ComfyUI'
+                          : provider.id === 'ollama'
+                            ? 'Ollama'
+                            : provider.id === 'runway'
+                              ? 'Runway'
+                              : 'Replicate'}
+                    </strong>
+                    <Badge
+                      tone={
+                        provider.connection === 'connected'
+                          ? 'success'
+                          : provider.configured
+                            ? 'brand'
+                            : 'muted'
+                      }
+                    >
+                      {!provider.configured
+                        ? t.missing
+                        : provider.connection === 'connected'
+                          ? t.connected
+                          : provider.connection === 'unavailable'
+                            ? t.unavailable
+                            : t.configured}
+                    </Badge>
+                  </div>
+                  <p>{t[provider.id]}</p>
+                  <small>
+                    {provider.connection === 'unchecked'
+                      ? t.unchecked
                       : provider.connection === 'unavailable'
                         ? t.unavailable
-                        : t.configured}
-                </Badge>
-              </div>
-              <p>{t[provider.id]}</p>
-              <small>
-                {provider.connection === 'unchecked'
-                  ? t.unchecked
-                  : provider.connection === 'unavailable'
-                    ? t.unavailable
-                    : t.connected}
-              </small>
+                        : t.connected}
+                  </small>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <details className="providers-setup">
-          <summary>{t.setup}</summary>
-          <p>{t.setupHint}</p>
-          <p>{t.replicateSetup}</p>
-          <p>{t.otherSetup}</p>
-        </details>
-        <div className="providers-activation">
-          <label>
-            <input
-              type="checkbox"
-              checked={settings.replicateEnabled}
-              onChange={(event) => toggle(event.target.checked)}
-              disabled={saving || submitting || pendingRequest}
-            />
-            <span>{t.enable}</span>
-            {saving && <LoaderCircle size={14} className="spin" />}
-          </label>
-          <p className="providers-muted">{t.activationHint}</p>
-        </div>
+            <details className="providers-setup">
+              <summary>{t.setup}</summary>
+              <p>{t.setupHint}</p>
+              <p>{t.replicateSetup}</p>
+              <p>{t.otherSetup}</p>
+            </details>
+            <div className="providers-activation">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={settings.replicateEnabled}
+                  onChange={(event) => toggle(event.target.checked)}
+                  disabled={saving || submitting || pendingRequest}
+                />
+                <span>{t.enable}</span>
+                {saving && <LoaderCircle size={14} className="spin" />}
+              </label>
+              <p className="providers-muted">{t.activationHint}</p>
+            </div>
+          </>
+        )}
         <div className="providers-generator">
           <h3>
             <Sparkles size={17} />
@@ -453,9 +510,11 @@ export function ProvidersPanel({
             <p className="providers-muted">
               {!replicate?.configured
                 ? t.configRequired
-                : !settings.replicateEnabled
-                  ? t.activationRequired
-                  : t.budgetRequired}
+                : !compatibleKind
+                  ? t.outputMismatch
+                  : !settings.replicateEnabled
+                    ? t.activationRequired
+                    : t.budgetRequired}
             </p>
           )}
           {!projects.length && (
@@ -466,6 +525,7 @@ export function ProvidersPanel({
               <Field label={t.project}>
                 <Select
                   value={projectId}
+                  disabled={generationOnly && Boolean(initialProjectId)}
                   onChange={(event) => {
                     setProjectId(event.target.value);
                     resetConfirmation();

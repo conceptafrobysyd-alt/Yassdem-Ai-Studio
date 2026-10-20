@@ -1,4 +1,7 @@
 const fr = {
+  providerReplicate: 'Replicate · modèle vidéo configuré',
+  replicateVideoControls:
+    'Ce modèle utilise sa description et une image facultative. Les formats, coupes et logos se règlent après réception dans le montage ou lors d’un export local. Une version configurée ne garantit pas l’accès du compte au modèle.',
   compression: 'Qualité et compression',
   compressionHigh: 'Qualité élevée · CRF 18',
   compressionBalanced: 'Équilibré · CRF 21',

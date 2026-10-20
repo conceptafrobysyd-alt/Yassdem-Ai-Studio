@@ -2,6 +2,16 @@
 
 Résultats constatés les **19 et 20 octobre 2026** dans l'environnement Linux cloud, avec vérification dans un navigateur réel. Les tests payants Runway n'ont pas été exécutés. L'installation sous Windows et macOS n'a pas été testée.
 
+## État actuel après les compléments
+
+La suite complète compte **216 tests réussis dans 14 fichiers**. TypeScript, la génération des types Next.js et le build de production passent. Les trois parcours HTTP passent : neuf contrôles produit, trois groupes Fashion et quatre groupes montage/Pinterest, incluant le vrai rendu d’aperçu avant export final.
+
+Une copie des sources sans `.next` ni `next-env.d.ts` a aussi passé `npm run typecheck`, en réutilisant les dépendances verrouillées installées. La commande a régénéré les déclarations Next.js nécessaires. Ce contrôle ne constitue pas une publication du cloud ni une restauration dans une nouvelle tâche.
+
+Le catalogue ajoute cinq tests ciblés, dont un sous-processus pilotant quatre groupes SQLite pour la préférence d’un fournisseur compatible. Dans Chromium, un modèle vidéo Replicate configuré avec des valeurs de test a été choisi dans le studio, sa version et sa réservation affichées, et sa préférence conservée sans activation ni augmentation du budget. Avec un plafond nul, aucune génération payante n’a été envoyée. Le passage FR/EN et le mobile sont vérifiés ; revenir au fournisseur local produit un vrai MP4. Aucune erreur du navigateur n’a été observée.
+
+Ces preuves s’ajoutent aux vérifications détaillées ci-dessous. Elles ne valident aucune génération IA réelle ni l’accès réseau à une boutique distante.
+
 ## Environnement
 
 | Outil                   | Version vérifiée                                        |

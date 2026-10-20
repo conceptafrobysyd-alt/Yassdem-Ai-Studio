@@ -47,6 +47,8 @@ Pour monter plusieurs vidéos, ouvrez Montage vidéo, ajoutez des clips puis cho
 
 La bibliothèque propose aussi l’export PNG/JPEG/WebP aux dimensions natives ou en 4K sur le côté long de 3840 pixels, avec un logo facultatif. Les paramètres conservent plusieurs identités de marque réutilisables. Un SVG simple importé comme logo est contrôlé puis converti en PNG. Le [guide de phase 5](docs/PHASE_5.md) précise les limites et la différence entre agrandissement et génération native.
 
+Les compléments ajoutent les aperçus composés avant export, les styles avec paramètres réutilisables, l’import produit par API autorisée et le catalogue des modèles. Un modèle Replicate vidéo compatible se sélectionne aussi dans le studio produit, avec ses contrôles de dépenses. Consultez [COMPLEMENTS.md](docs/COMPLEMENTS.md) pour leur fonctionnement et leurs limites de validation.
+
 ## Données et configuration
 
 Le fichier `.env.example` décrit les variables prises en charge. `DATABASE_URL="file:./studio.db"` crée la base dans `prisma/studio.db`. `STORAGE_DIR="./storage"` désigne les médias et la clé locale de session ; utilisez un chemin absolu pour partager un emplacement précis entre les processus. Les fichiers `.env`, la base et `storage/` sont exclus de Git.

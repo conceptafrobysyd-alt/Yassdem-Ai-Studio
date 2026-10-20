@@ -53,6 +53,8 @@ export const providerMessages = {
     refresh: 'Rafraîchir le suivi',
     configRequired:
       'Configurez Replicate sur le serveur avant de lancer une demande.',
+    outputMismatch:
+      'Le modèle Replicate configuré ne produit pas le type de média de cet atelier. Choisissez un modèle compatible dans la configuration du serveur.',
     activationRequired: 'Activez Replicate pour préparer une demande payante.',
     budgetRequired:
       'Définissez un plafond mensuel suffisant dans les réglages du budget.',
@@ -138,6 +140,8 @@ export const providerMessages = {
     refresh: 'Refresh status',
     configRequired:
       'Configure Replicate on the server before submitting a request.',
+    outputMismatch:
+      'The configured Replicate model does not produce the media type used by this studio. Configure a compatible model on the server.',
     activationRequired: 'Enable Replicate to prepare a paid request.',
     budgetRequired: 'Set a sufficient monthly ceiling in the budget settings.',
     history: 'Replicate generations',

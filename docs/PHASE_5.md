@@ -94,6 +94,8 @@ Sans Ollama, le mode de rédaction locale reste disponible : il assemble des mod
 
 L'API privée `GET /api/providers/status` expose les capacités et la configuration sans secret. Avec `?check=1`, elle effectue des contrôles de connexion en lecture seule, sans génération ni téléchargement de modèle. Les états « configuré », « connecté » et « génération réussie » désignent des vérifications différentes.
 
+`GET /api/providers/models` fournit aussi le catalogue des contrats de modèles et workflows supportés, avec paramètres et estimations, sans requête réseau. Le studio vidéo permet de sélectionner un modèle Replicate vidéo configuré ; une préférence compatible ne vaut ni activation du fournisseur ni autorisation d’une dépense. Voir [les compléments](COMPLEMENTS.md).
+
 Les tests d'adaptateurs utilisent des réponses réseau simulées et des fichiers média réellement décodés. Aucune génération Replicate payante, aucune inférence Ollama réelle et aucune installation de poids de modèle ne sont revendiquées par ce guide. Les commandes effectivement exécutées et leurs résultats figurent dans [VALIDATION.md](VALIDATION.md).
 
 Kling, les modèles nécessitant un autre schéma d'entrée Replicate et l'optimisation de modèles GPU ne disposent pas d'un adaptateur dédié dans cette livraison. Les parcours Fashion IA restent soumis à la configuration séparée décrite dans [PHASE_3.md](PHASE_3.md).

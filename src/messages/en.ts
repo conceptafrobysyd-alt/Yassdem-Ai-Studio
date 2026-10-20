@@ -1,4 +1,7 @@
 const en = {
+  providerReplicate: 'Replicate · configured video model',
+  replicateVideoControls:
+    'This model uses its prompt and an optional image. Adjust framing, trims and logos after receiving the result in the editor or a local export. Configuration does not guarantee account access to the model.',
   compression: 'Quality and compression',
   compressionHigh: 'High quality · CRF 18',
   compressionBalanced: 'Balanced · CRF 21',
