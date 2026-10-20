@@ -1,9 +1,12 @@
 const en = {
+  editorDescription: 'Arrange clips, add captions and export your video.',
+  seoDescription:
+    'Prepare and refine your Pinterest copy in French and English.',
   fashionDescription: 'Reusable profiles, garments and editorial creations.',
   lookbookDescription: 'Compose, vary and export your look collections.',
 
   libraryUploadDescription:
-    'Images: 5 MB · MP4: 100 MB · PNG, JPG or WebP logos',
+    'Images: 5 MB · MP4: 100 MB · MP3, WAV, M4A audio: 50 MB',
 
   pricingAssumption:
     'Verify this assumption: 5 credits/s, USD 0.01/credit. Rate: USD 1 = EUR {rate}. Actual charges may differ.',
@@ -225,7 +228,7 @@ const en = {
   add: 'Add',
   hijab: 'Hijab option',
   hijabNote:
-    'Independent of clothing styles; saved for future fashion modules.',
+    'Independent of clothing styles; each profile remains customizable.',
   styleCoverage: 'Clothing coverage',
   styleColors: 'Colors',
   styleFit: 'Fit & length',
@@ -233,7 +236,7 @@ const en = {
   styleMood: 'Mood, setting & poses',
   styleBody: 'Body type & features',
   futureStyleNote:
-    'These preferences will be used by Fashion Studio in phase 3.',
+    'You can customize the styles of each look in Fashion Studio.',
   brandKit: 'Brand Kit',
   brandKitDescription: 'Your visual signature, for every creation.',
   addLogo: 'Upload a logo',
@@ -251,7 +254,7 @@ const en = {
   apiKeyNote:
     'Set RUNWAY_API_KEY in your server environment variables, then restart the app. Your key stays exclusively on the server.',
   paidEnabled: 'Enable paid Runway generations',
-  budget: 'Monthly spending cap in USD',
+  budget: 'Monthly spending cap in EUR',
   budgetHelp:
     '€0 blocks all paid requests. Every generation requires confirmation.',
   usage: 'Recorded spending this month',

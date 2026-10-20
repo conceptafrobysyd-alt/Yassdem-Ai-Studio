@@ -3,6 +3,7 @@ import { mkdir, writeFile, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 import type { Media } from '@prisma/client';
+import { AUDIO_LIMIT, sniffAudio, validateAudioFile } from './media-audio';
 import { db } from '@/lib/db';
 import { ApiError } from '@/lib/http';
 import { probeMedia } from '@/lib/export';
@@ -107,6 +108,7 @@ export async function uploadMedia(request: Request) {
   if (file.size > VIDEO_LIMIT) throw new ApiError(413, 'FILE_TOO_LARGE');
   let bytes: Buffer = Buffer.from(await file.arrayBuffer());
   const imageFormat = sniffImage(bytes);
+  const audioFormat = sniffAudio(bytes, file.name);
   let mimeType: string;
   let extension: string;
   let width: number | undefined;
@@ -139,6 +141,11 @@ export async function uploadMedia(request: Request) {
     }
     mimeType = `image/${imageFormat}`;
     extension = imageFormat === 'jpeg' ? 'jpg' : imageFormat;
+  } else if (audioFormat) {
+    if (role === 'LOGO') throw new ApiError(400, 'LOGO_IMAGE_REQUIRED');
+    if (file.size > AUDIO_LIMIT) throw new ApiError(413, 'AUDIO_TOO_LARGE');
+    mimeType = audioFormat.mimeType;
+    extension = audioFormat.extension;
   } else if (bytes.length >= 12 && bytes.toString('ascii', 4, 8) === 'ftyp') {
     if (role === 'LOGO') throw new ApiError(400, 'LOGO_IMAGE_REQUIRED');
     // ISO Base Media File Format; the exact codec and duration are probed before use by FFmpeg.
@@ -169,7 +176,7 @@ export async function uploadMedia(request: Request) {
     throw new ApiError(
       400,
       'UNSUPPORTED_MEDIA',
-      'Formats acceptés : PNG, JPG, WebP et MP4.',
+      'Formats acceptés : PNG, JPG, WebP, MP4, MP3, WAV et M4A.',
     );
   }
   const relativePath = `media/${randomUUID()}.${extension}`;
@@ -181,7 +188,9 @@ export async function uploadMedia(request: Request) {
   await writeFile(filePath, bytes, { flag: 'wx', mode: 0o600 });
   try {
     let duration: number | undefined;
-    if (mimeType === 'video/mp4') {
+    if (mimeType.startsWith('audio/')) {
+      duration = (await validateAudioFile(filePath)).duration;
+    } else if (mimeType === 'video/mp4') {
       try {
         const details = await probeMedia(filePath);
         width = details.width;
@@ -243,9 +252,13 @@ export async function deleteMedia(id: string) {
         throw new ApiError(409, 'MEDIA_IN_USE');
     }
 
-    const candidates = await tx.job.findMany({
+    const jobCandidates = await tx.job.findMany({
       where: { parameters: { contains: id } },
       select: { parameters: true, status: true },
+    });
+    const projectCandidates = await tx.project.findMany({
+      where: { parameters: { contains: id } },
+      select: { parameters: true },
     });
     function references(value: unknown): boolean {
       if (value === id) return true;
@@ -256,7 +269,7 @@ export async function deleteMedia(id: string) {
         Object.values(value).some(references),
       );
     }
-    for (const job of candidates) {
+    for (const job of [...jobCandidates, ...projectCandidates]) {
       try {
         if (references(JSON.parse(job.parameters)))
           throw new ApiError(409, 'MEDIA_IN_USE');

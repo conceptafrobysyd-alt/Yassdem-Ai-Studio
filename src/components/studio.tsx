@@ -58,6 +58,8 @@ import {
   cn,
 } from './ui/primitives';
 import { FashionStudio } from './fashion-studio';
+import { EditorStudio } from './editor-studio';
+import { SEOStudio } from './seo-studio';
 import fr from '@/messages/fr';
 import en from '@/messages/en';
 type Locale = 'fr' | 'en';
@@ -598,7 +600,11 @@ function StudioApp({
                   ? 'fashionDescription'
                   : page === 'lookbook'
                     ? 'lookbookDescription'
-                    : 'settingsDescription',
+                    : page === 'editor'
+                      ? 'editorDescription'
+                      : page === 'seo'
+                        ? 'seoDescription'
+                        : 'settingsDescription',
             );
   return (
     <div className="app-shell">
@@ -609,7 +615,7 @@ function StudioApp({
         type="file"
         accept={
           page === 'library' && fileRole === 'SOURCE'
-            ? '.png,.jpg,.jpeg,.webp,.mp4'
+            ? '.png,.jpg,.jpeg,.webp,.mp4,.mp3,.wav,.m4a'
             : '.png,.jpg,.jpeg,.webp'
         }
         multiple={page === 'library'}
@@ -638,6 +644,8 @@ function StudioApp({
             { id: 'library', icon: FolderOpen },
             { id: 'fashion', icon: Shirt },
             { id: 'lookbook', icon: Layers3 },
+            { id: 'editor', icon: Film },
+            { id: 'seo', icon: ScanLine },
           ].map((item) => (
             <button
               key={item.id}
@@ -647,23 +655,6 @@ function StudioApp({
               <item.icon size={19} />
               <span>{t(item.id)}</span>
               {page === item.id && <span className="nav-dot" />}
-            </button>
-          ))}
-          <div className="nav-divider" />
-          <div className="sidebar-label upcoming-label">{t('upcoming')}</div>
-          {[
-            { id: 'editor', icon: Film, phase: 4 },
-            { id: 'seo', icon: ScanLine, phase: 4 },
-          ].map((item) => (
-            <button
-              disabled
-              key={item.id}
-              className="nav-item future"
-              title={t(item.phase === 3 ? 'phase3' : 'phase4')}
-            >
-              <item.icon size={18} />
-              <span>{t(item.id)}</span>
-              <LockKeyhole size={12} />
             </button>
           ))}
         </nav>
@@ -794,7 +785,9 @@ function StudioApp({
                   <Check size={16} />
                   {t('saveProject')}
                 </Button>
-              ) : ['fashion', 'lookbook'].includes(page) ? null : (
+              ) : ['fashion', 'lookbook', 'editor', 'seo'].includes(
+                  page,
+                ) ? null : (
                 <Button onClick={newProject}>
                   <Plus size={17} />
                   {t('newProject')}
@@ -1778,6 +1771,13 @@ function StudioApp({
                         <div className="media-thumb">
                           {item.mimeType.startsWith('video/') ? (
                             <video src={item.url} preload="metadata" />
+                          ) : item.mimeType.startsWith('audio/') ? (
+                            <audio
+                              src={item.url}
+                              controls
+                              preload="metadata"
+                              style={{ width: '90%' }}
+                            />
                           ) : (
                             <img src={item.url} alt={item.name} />
                           )}
@@ -2303,6 +2303,24 @@ function StudioApp({
                 setPlayingJob(null);
                 setPage('studio');
               }}
+            />
+          )}
+          {page === 'editor' && (
+            <EditorStudio
+              locale={locale}
+              projects={projects}
+              media={media}
+              jobs={jobs}
+              initialProjectId={selectedId}
+              onRefresh={reload}
+            />
+          )}
+          {page === 'seo' && (
+            <SEOStudio
+              locale={locale}
+              defaultContentLocale={settings.contentLocale}
+              projects={projects}
+              onRefresh={reload}
             />
           )}
           <footer className="workspace-footer">

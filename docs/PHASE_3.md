@@ -31,6 +31,8 @@ Une variante duplique le look et ses paramètres en réutilisant les mêmes vêt
 
 La planche locale mesure 1600 pixels de large ; sa hauteur dépend du nombre de photos. Elle conserve les vêtements et la référence en vignettes séparées. Elle ne place aucun vêtement sur un corps et ne modifie pas les poses.
 
+Le rendu des textes utilise Sharp et Fontconfig. Si aucun cache n'est déjà configuré, l'application prépare un cache accessible en écriture dans `storage/.cache`, ou dans le dossier défini par `STORAGE_DIR`. Conservez les droits d'écriture de ce dossier.
+
 Le passage au studio vidéo ne lance aucune dépense. Les limites du moteur vidéo choisi, le budget et la confirmation avant un appel payant restent applicables. La comparaison avant/après reste nécessaire pour tout résultat IA : coupe, texture, motifs, couleurs et détails peuvent être modifiés par le modèle.
 
 ## Installer et préparer ComfyUI

@@ -1,11 +1,15 @@
 const fr = {
+  editorDescription:
+    'Assemblez vos clips, ajoutez des sous-titres et exportez votre vidéo.',
+  seoDescription:
+    'Préparez et adaptez vos textes Pinterest en français et en anglais.',
   fashionDescription:
     'Profils réutilisables, vêtements et créations éditoriales.',
   lookbookDescription:
     'Composez, déclinez et exportez vos collections de looks.',
 
   libraryUploadDescription:
-    'Images : 5 Mo · MP4 : 100 Mo · logos PNG, JPG ou WebP',
+    'Images : 5 Mo · MP4 : 100 Mo · audio MP3, WAV, M4A : 50 Mo',
 
   pricingAssumption:
     'Hypothèse à vérifier : 5 crédits/s, 0,01 USD/crédit. Taux : 1 USD = {rate} EUR. Les frais réels peuvent différer.',
@@ -230,7 +234,7 @@ const fr = {
   add: 'Ajouter',
   hijab: 'Option hijab',
   hijabNote:
-    'Indépendante des styles choisis ; conservée pour les futurs modules fashion.',
+    'Option indépendante des styles choisis ; chaque profil reste personnalisable.',
   styleCoverage: 'Couverture vestimentaire',
   styleColors: 'Couleurs',
   styleFit: 'Coupe & longueur',
@@ -238,7 +242,7 @@ const fr = {
   styleMood: 'Ambiance, décor & poses',
   styleBody: 'Morphologie & caractéristiques',
   futureStyleNote:
-    'Ces préférences seront utilisées par le Fashion Studio en phase 3.',
+    'Les styles restent personnalisables pour chaque look dans Fashion Studio.',
   brandKit: 'Brand Kit',
   brandKitDescription: 'Vos signatures visuelles, pour toutes vos créations.',
   addLogo: 'Ajouter un logo',
@@ -256,7 +260,7 @@ const fr = {
   apiKeyNote:
     'Définissez RUNWAY_API_KEY dans les variables d’environnement du serveur, puis redémarrez l’application. La clé reste exclusivement côté serveur.',
   paidEnabled: 'Autoriser les générations Runway payantes',
-  budget: 'Plafond mensuel en USD',
+  budget: 'Plafond mensuel en EUR',
   budgetHelp:
     '0 € bloque tout appel payant. Chaque génération nécessite une confirmation.',
   usage: 'Dépenses enregistrées ce mois-ci',

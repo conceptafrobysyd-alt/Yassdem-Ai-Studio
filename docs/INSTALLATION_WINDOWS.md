@@ -49,6 +49,8 @@ Si les exécutables ne sont pas dans le `PATH`, indiquez leurs chemins dans `.en
 FFMPEG_PATH="C:/Outils/ffmpeg/bin/ffmpeg.exe"
 FFPROBE_PATH="C:/Outils/ffmpeg/bin/ffprobe.exe"
 STORAGE_DIR="C:/YassdemDonnees/storage"
+# Facultatif pour les textes du montage si la police n’est pas trouvée.
+FFMPEG_FONT_PATH="C:/Windows/Fonts/arial.ttf"
 ```
 
 Conservez un dossier de stockage accessible en écriture. Ne synchronisez pas une base SQLite ouverte entre plusieurs machines via un lecteur réseau ou un logiciel de synchronisation.
@@ -57,7 +59,7 @@ Conservez un dossier de stockage accessible en écriture. Ne synchronisez pas un
 
 Pour démarrer une version compilée : `npm.cmd run build`, puis `npm.cmd start`. Après un redémarrage de Windows, revenez dans le dossier du projet et relancez la commande souhaitée. Vos projets restent dans la base SQLite et les fichiers dans le stockage local.
 
-Si l'encodage échoue, vérifiez d'abord FFmpeg, FFprobe et l'encodeur demandé. Essayez 720p H.264 pour vérifier le parcours sur une machine peu puissante. Le 2160p et H.265 demandent davantage de temps CPU et de mémoire. Aucun GPU dédié ni modèle IA local n'est requis pour l'animation d'une image fixe.
+Si l'encodage échoue, vérifiez d'abord FFmpeg, FFprobe et l'encodeur demandé. Essayez 720p H.264 pour vérifier le parcours sur une machine peu puissante. Le 2160p et H.265 demandent davantage de temps CPU et de mémoire. Aucun GPU dédié ni modèle IA local n'est requis pour l'animation d'une image fixe, le montage vidéo ou la rédaction Pinterest par modèles de texte. Les textes du montage nécessitent le filtre `drawtext` de FFmpeg et une police locale accessible.
 
 Si un port est déjà occupé, fermez l'ancienne instance du studio. Si une migration échoue, vérifiez `DATABASE_URL` et les droits du dossier avant de relancer `npm.cmd run db:deploy`. Ne supprimez pas une base contenant vos projets pour résoudre un simple problème d'installation.
 

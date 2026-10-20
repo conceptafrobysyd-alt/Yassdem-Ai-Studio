@@ -2,6 +2,7 @@ import { mkdir, open, readFile, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { processPendingJobs } from './lib/jobs';
 import { processFashionJobs } from './lib/fashion-jobs';
+import { processEditJobs } from './lib/editor-jobs';
 import { db } from './lib/db';
 import { storageRoot } from './lib/media';
 
@@ -91,6 +92,7 @@ async function main() {
       try {
         await processPendingJobs();
         await processFashionJobs();
+        await processEditJobs();
       } catch {
         console.error(
           '[worker] Job processing failed; retrying pending tasks.',

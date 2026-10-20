@@ -1,8 +1,8 @@
 # Yassdem AI Studio
 
-Studio personnel de création de vidéos produits et de collections fashion. Les phases 1 à 3 apportent les projets, la médiathèque, les paramètres, l'animation locale d'une photo, l'adaptateur Runway, les exports MP4, les profils de mannequins et la composition de looks. L'interface propose le français et l'anglais.
+Studio personnel de création de vidéos produits et de collections fashion. Les phases 1 à 4 apportent les projets, la médiathèque, les paramètres, l'animation locale d'une photo, l'adaptateur Runway, les exports MP4, les profils de mannequins, la composition de looks, le montage de plusieurs clips et la préparation des textes Pinterest. L'interface propose le français et l'anglais.
 
-Le parcours local produit de vrais fichiers : vidéo par zoom FFmpeg d'une image fixe et planche de vêtements par assemblage Sharp. Ces deux modes sont sans IA. Les intégrations Runway et ComfyUI sont implémentées ; aucune génération Runway, image éditoriale IA ou véritable inférence d'essayage virtuel n'a été validée avec un fournisseur réel pour cette livraison.
+Le parcours local produit de vrais fichiers : vidéo par zoom FFmpeg d'une image fixe et planche de vêtements par assemblage Sharp. Le montage assemble aussi de vrais clips avec coupes, fondus, textes, logo et musique. Ces modes sont sans IA ; la rédaction Pinterest locale utilise des modèles de texte. Les intégrations Runway et ComfyUI sont implémentées ; aucune génération Runway, image éditoriale IA ou véritable inférence d'essayage virtuel n'a été validée avec un fournisseur réel pour cette livraison.
 
 ## Installation rapide
 
@@ -43,6 +43,8 @@ Le budget mensuel est de **0 €** par défaut et Runway est désactivé. Le par
 
 Pour une collection fashion, choisissez Fashion Studio ou Lookbook Creator, importez de 1 à 8 vêtements, enregistrez un profil de mannequin facultatif puis composez un look. Le mode **Planche de collection** crée un PNG de vos photos originales, sans les faire porter au mannequin. Vous pouvez créer des variantes, comparer les originaux et le résultat, télécharger la planche puis l'ouvrir dans le studio vidéo. Le [guide de phase 3](docs/PHASE_3.md) détaille ce parcours et les workflows IA optionnels.
 
+Pour monter plusieurs vidéos, ouvrez Montage vidéo, ajoutez des clips puis choisissez les coupes, les textes et une musique autorisée. L'export produit un MP4 et une couverture JPEG. L'atelier Pinterest prépare des textes FR/EN modifiables et des fichiers JSON/CSV ; il ne publie rien automatiquement. Le [guide de phase 4](docs/PHASE_4.md) décrit ces parcours.
+
 ## Données et configuration
 
 Le fichier `.env.example` décrit les variables prises en charge. `DATABASE_URL="file:./studio.db"` crée la base dans `prisma/studio.db`. `STORAGE_DIR="./storage"` désigne les médias et la clé locale de session ; utilisez un chemin absolu pour partager un emplacement précis entre les processus. Les fichiers `.env`, la base et `storage/` sont exclus de Git.
@@ -61,15 +63,17 @@ npm test
 npm run build
 npm run test:smoke
 npm run test:smoke:fashion
+npm run test:smoke:editor
 ```
 
-Les tests HTTP nécessitent le build et démarrent leur propre instance avec une base et un stockage temporaires. `test:smoke` produit de vrais MP4 avec FFmpeg ; `test:smoke:fashion` vérifie les profils, les looks, les archives et une vraie planche PNG. Les tests d'adaptateurs IA utilisent des réponses simulées et ne déclenchent pas d'appel payant. Les validations réellement exécutées et leurs limites sont consignées dans [VALIDATION.md](docs/VALIDATION.md).
+Les tests HTTP nécessitent le build et démarrent leur propre instance avec une base et un stockage temporaires. `test:smoke` produit de vrais MP4 avec FFmpeg ; `test:smoke:fashion` vérifie les profils, les looks, les archives et une vraie planche PNG ; `test:smoke:editor` contrôle un montage MP4 avec son et couverture, ainsi que les contenus et exports Pinterest. Les tests d'adaptateurs IA utilisent des réponses simulées et ne déclenchent pas d'appel payant. Les validations réellement exécutées et leurs limites sont consignées dans [VALIDATION.md](docs/VALIDATION.md).
 
 - [Architecture et exploitation](docs/ARCHITECTURE.md)
 - [Installation Windows](docs/INSTALLATION_WINDOWS.md)
 - [Configuration Runway et budget](docs/RUNWAY.md)
 - [Fashion, lookbooks et configuration ComfyUI](docs/PHASE_3.md)
+- [Montage vidéo et Pinterest](docs/PHASE_4.md)
 - [Fonctionnalités et limites](docs/FONCTIONNALITES.md)
 - [Licences des composants](LICENSES.md)
 
-Les phases 4 et 5 restent à valider et livrer séparément : montage de plusieurs clips, SEO Pinterest et fournisseurs IA supplémentaires. Les modes Fashion IA restent conditionnés à une installation ComfyUI compatible et à sa validation réelle. Consultez l'inventaire avant de considérer un élément du cahier des charges comme livré.
+La phase 5, consacrée aux fournisseurs IA supplémentaires, reste à valider et livrer séparément. Les modes Fashion IA restent conditionnés à une installation ComfyUI compatible et à sa validation réelle. Consultez l'inventaire avant de considérer un élément du cahier des charges comme livré.

@@ -8,7 +8,7 @@ Prisma utilise le moteur JavaScript (`engineType = "client"`) et l'adaptateur of
 
 Le worker Node.js traite la file de tâches. Les scripts `dev` et `start` lancent le web et le worker ensemble avec `concurrently`. Pour diagnostiquer chaque processus séparément, utilisez `npm run dev:web` et `npm run worker` dans deux terminaux situés dans le même dossier et avec la même configuration.
 
-FFmpeg et FFprobe sont des exécutables système invoqués sans shell avec des arguments contrôlés. Sharp valide et normalise les images. L'adaptateur Runway isole le contrat du fournisseur des routes et de l'interface.
+FFmpeg et FFprobe sont des exécutables système invoqués sans shell avec des arguments contrôlés. Sharp valide et normalise les images. Les adaptateurs Runway et ComfyUI isolent les contrats fournisseurs des routes et de l'interface. Le montage de plusieurs clips utilise aussi FFmpeg. L'atelier SEO conserve les textes dans les paramètres du projet ; son mode local assemble des modèles éditoriaux sans IA, et son option Ollama demande un service local séparé.
 
 Les tâches sont conservées en base. Un envoi payant commencé n'est pas rejoué automatiquement lorsqu'on ignore si le fournisseur l'a reçu. Le traitement des tâches dont l'identifiant externe est connu peut reprendre sans envoi d'une seconde génération. La comptabilisation garde séparés l'estimation, la réservation et un coût réel éventuellement rapproché.
 
@@ -21,32 +21,37 @@ flowchart LR
     WORKER --> MEDIA
     WORKER --> FFMPEG[FFmpeg / FFprobe]
     WORKER --> RUNWAY[API Runway si activée]
+    WORKER --> COMFY[ComfyUI si configuré]
+    API --> OLLAMA[Ollama local si configuré]
 ```
 
 ## Organisation
 
-| Chemin | Rôle |
-| --- | --- |
-| `src/app/` | Pages, interface et routes HTTP |
-| `src/lib/` | Accès aux données, authentification, validation, médias et tâches |
-| `src/lib/providers/` | Adaptateurs des fournisseurs IA |
-| `src/lib/export.ts` | Encodage MP4, géométrie, filigrane et métadonnées d'export |
-| `src/worker.ts` | Traitement asynchrone des tâches |
-| `prisma/schema.prisma` | Modèles de données |
-| `prisma/migrations/` | Historique de création et d'évolution de la base |
-| `tests/` | Vérifications automatisées sans appel payant |
+| Chemin                                    | Rôle                                                                       |
+| ----------------------------------------- | -------------------------------------------------------------------------- |
+| `src/app/`                                | Pages, interface et routes HTTP                                            |
+| `src/lib/`                                | Accès aux données, authentification, validation, médias et tâches          |
+| `src/lib/providers/`                      | Adaptateurs des fournisseurs IA                                            |
+| `src/lib/export.ts`                       | Encodage MP4, géométrie, filigrane et métadonnées d'export                 |
+| `src/lib/editor.ts` et `editor-jobs.ts`   | Séquence, rendu FFmpeg, musique, textes, couverture et tâches persistantes |
+| `src/lib/fashion.ts` et `fashion-jobs.ts` | Profils, looks, planche locale et tâches Fashion                           |
+| `src/lib/seo.ts`                          | Contenus Pinterest, rédaction locale ou Ollama, validation et CSV          |
+| `src/worker.ts`                           | Traitement asynchrone des tâches                                           |
+| `prisma/schema.prisma`                    | Modèles de données                                                         |
+| `prisma/migrations/`                      | Historique de création et d'évolution de la base                           |
+| `tests/`                                  | Vérifications automatisées sans appel payant                               |
 
-`Settings` conserve les préférences, le budget et le hash du mot de passe. `Project` regroupe les paramètres d'un projet. `Media` référence un fichier source, un logo ou une vidéo produite. `Job` conserve l'état de la génération, le fournisseur, les paramètres, l'estimation, la réservation de budget et l'identifiant de tâche externe éventuel.
+`Settings` conserve les préférences, le budget et le hash du mot de passe. `Project` regroupe les paramètres d'un projet. `Media` référence un fichier source, une piste audio, un logo ou un résultat image/vidéo. `Job` conserve l'état de la génération, le fournisseur, les paramètres, l'estimation, la réservation de budget et l'identifiant de tâche externe éventuel.
 
-La langue de l'interface et la langue de contenu sont deux paramètres indépendants. Les styles, leurs champs descriptifs par projet et l'option hijab sont des préférences persistées ; ils ne constituent pas encore un moteur de mannequin ou de virtual try-on.
+`Mannequin` conserve un profil réutilisable et `Look` une composition de vêtements liée à un projet. La langue de l'interface et la langue de contenu sont deux paramètres indépendants. Les styles, leurs champs descriptifs par projet et l'option hijab sont des préférences persistées. Le mode local compose une planche ; les modes éditorial et virtual try-on demandent deux workflows ComfyUI séparés et adaptés aux modèles installés.
 
 ## Exports et ressources
 
 Les résolutions 720, 1080, 1440 et 2160 désignent le petit côté de l'image. Exemples : 1080 en 9:16 donne 1080 × 1920 ; 2160 en 16:9 donne 3840 × 2160 ; 2160 carré donne 2160 × 2160. Le recadrage remplit le format choisi et peut couper les bords de la source.
 
-Les métadonnées distinguent la taille de la source, la taille de l'export et un éventuel agrandissement. La vidéo locale part d'une photo avec un zoom progressif. Elle ne synthétise aucun mouvement réel du produit et reste silencieuse. Un réexport de MP4 conserve une piste audio présente en la réencodant en AAC à 192 kbit/s ; l'ajout de musique et le montage avancé relèvent de la phase 4.
+Les métadonnées distinguent la taille de la source, la taille de l'export et un éventuel agrandissement. La vidéo locale part d'une photo avec un zoom progressif. Elle ne synthétise aucun mouvement réel du produit et reste silencieuse. Un réexport de MP4 conserve une piste audio présente en la réencodant en AAC à 192 kbit/s ; le montage de phase 4 conserve également le son des clips, permet un mélange avec une musique autorisée et extrait une couverture JPEG.
 
-Le traitement limite le parallélisme FFmpeg afin de garder la machine utilisable. Les exports 2160p ou H.265 peuvent être beaucoup plus longs qu'un aperçu 720p et atteindre les délais maximums sur une petite machine. Libérez de l'espace avant de traiter de nombreux clips. Le GPU n'est pas utilisé et aucun modèle ComfyUI/Ollama n'est installé.
+Le traitement limite le parallélisme FFmpeg afin de garder la machine utilisable. Les exports 2160p ou H.265 peuvent être beaucoup plus longs qu'un aperçu 720p et atteindre les délais maximums sur une petite machine. Libérez de l'espace avant de traiter de nombreux clips. Les parcours FFmpeg et Sharp n'utilisent pas de GPU. Aucun modèle ComfyUI/Ollama n'est installé automatiquement ; les modes IA locaux exigent des services séparés et du matériel adapté.
 
 ## Accès et stockage
 
@@ -58,7 +63,7 @@ Au premier lancement, la création du mot de passe est ouverte parce qu'aucun pr
 
 ## Sauvegarde
 
-L'export ZIP d'un projet contient `project.json` et les fichiers médias du projet. Il est manuel : il n'existe pas de planificateur de sauvegardes, de stockage distant automatique ni de restauration en un clic. Vérifiez le contenu d'une archive et conservez-la sur un support distinct. Elle peut contenir vos contenus privés ; elle n'inclut pas les clés API de `.env`, la clé de session ni le hash de mot de passe. Une archive individuelle ne remplace pas une copie complète de l'instance.
+L'export ZIP d'un projet contient `project.json`, les looks et profils utilisés lorsqu'ils existent, ainsi que les fichiers médias référencés. Les paramètres enregistrés conservent aussi le montage et le contenu SEO. Il est manuel : il n'existe pas de planificateur de sauvegardes, de stockage distant automatique ni de restauration en un clic. Vérifiez le contenu d'une archive et conservez-la sur un support distinct. Elle peut contenir vos contenus privés ; elle n'inclut pas les clés API de `.env`, la clé de session ni le hash de mot de passe. Une archive individuelle ne remplace pas une copie complète de l'instance.
 
 Pour une copie complète de l'instance, arrêtez le web et le worker puis copiez ensemble la base SQLite et le dossier de stockage. Conservez la configuration serveur à part, de manière sécurisée. Une base et des médias pris à des instants différents peuvent devenir incohérents. Testez une restauration sur une copie isolée avant de compter sur une sauvegarde.
 

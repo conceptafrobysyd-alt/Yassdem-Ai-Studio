@@ -1,28 +1,56 @@
 # Validation
 
-Résultats constatés le **19 octobre 2026** dans l'environnement Linux cloud, avec vérification dans un navigateur réel. Les tests payants Runway n'ont pas été exécutés. L'installation sous Windows et macOS n'a pas été testée.
+Résultats constatés les **19 et 20 octobre 2026** dans l'environnement Linux cloud, avec vérification dans un navigateur réel. Les tests payants Runway n'ont pas été exécutés. L'installation sous Windows et macOS n'a pas été testée.
 
 ## Environnement
 
-| Outil | Version vérifiée |
-| --- | --- |
-| Node.js | 24.19.0 |
-| npm | 11.9.0 |
-| FFmpeg / FFprobe | 7.1.5 |
-| Prisma | 6.19.0, moteur JavaScript et adaptateur SQLite officiel |
-| better-sqlite3 / SQLite | 12.11.1 / 3.53.2 |
+| Outil                   | Version vérifiée                                        |
+| ----------------------- | ------------------------------------------------------- |
+| Node.js                 | 24.19.0                                                 |
+| npm                     | 11.9.0                                                  |
+| FFmpeg / FFprobe        | 7.1.5                                                   |
+| Prisma                  | 6.19.0, moteur JavaScript et adaptateur SQLite officiel |
+| better-sqlite3 / SQLite | 12.11.1 / 3.53.2                                        |
+
+## Phase 4 — Montage et Pinterest
+
+Contrôles exécutés le 20 octobre 2026 :
+
+| Contrôle                    | Résultat                                                                                                                                     |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tests ciblés montage et SEO | 32 tests réussis : 6 montage et 26 SEO                                                                                                       |
+| Vérification TypeScript     | `npm run typecheck` réussi après intégration                                                                                                 |
+| Build de production         | `npm run build` réussi après intégration                                                                                                     |
+| Parcours HTTP en production | 3 groupes réussis avec `npm run test:smoke:editor` et une base et un stockage temporaires                                                    |
+| Navigateur montage          | Import MP4 et WAV, blocage sans confirmation musicale, coupe, texte, sauvegarde, changement FR/EN sans perte du brouillon et export vérifiés |
+| Lecture et téléchargement   | Lecture de la vraie vidéo avec progression du temps et téléchargement de la couverture vérifiés                                              |
+| Navigateur Pinterest        | Rédaction locale FR/EN, titre modifié et conservé, exports CSV/JSON vérifiés                                                                 |
+| Affichage mobile et console | À 390 pixels, aucun débordement horizontal dans les deux ateliers et aucune erreur du navigateur observée                                    |
+| Inférence Ollama réelle     | Non exécutée ; tests du contrat avec réponses simulées                                                                                       |
+
+Les trois groupes HTTP vérifient l'accès privé aux API, l'import d'une vraie piste WAV et le refus d'un faux fichier, la sauvegarde de coupes ordonnées, la protection des médias référencés, la confirmation des droits musicaux et l'idempotence ; la préparation SEO FR/EN avec mention d'affiliation, les modifications humaines, les exports CSV/JSON et la conservation des paramètres du montage ; le traitement persistant par le worker d'un vrai MP4 H.264/AAC avec fondu, musique audible, logo, couverture JPEG et archive ZIP, sans aucune génération payante.
+
+La vérification du rendu porte sur la durée et les codecs via FFprobe, les couleurs des clips ordonnés, le mélange des couleurs pendant le fondu, les pixels du logo et le niveau sonore décodé. Les tests ciblés vérifient aussi les textes UTF-8, le nettoyage des fichiers temporaires et la séquence figée lors de la mise en file. Les tests SEO contrôlent notamment les variantes distinctes, les limites de longueur, les liens de destination, les mentions conservées et la protection contre les formules de tableur.
+
+Commande de la sélection ciblée :
+
+```bash
+npx vitest run tests/editor.test.ts tests/seo.test.ts
+```
 
 ## Phase 3 — Contrôles actuels
 
-| Contrôle | Résultat |
-| --- | --- |
-| Sélection de tests des phases 1 à 3 | 58 tests réussis : 12 backend, 16 Runway, 1 test Fashion pilotant 9 groupes de vérifications, 29 ComfyUI |
-| Contrat ComfyUI | Tests de transport et de sécurité réussis, avec HTTP simulé ; une vraie base SQLite et un vrai PNG décodé vérifient la persistance |
-| Build de production intégré | Réussi ; contrôle final après ajustement du cache de polices en cours |
-| Parcours HTTP Fashion en production | 3 groupes réussis avec `npm run test:smoke:fashion` |
-| Navigateur Fashion | Création d'un profil, import, planche réelle, changement FR/EN conservant le projet et enregistrement sans changement vérifiés |
-| Lookbook et mobile de phase 3 | Vérification finale en cours |
-| Inférence ComfyUI réelle | Non exécutée ; aucun service, GPU, checkpoint ou poids de modèle installé |
+| Contrôle                            | Résultat                                                                                                                           |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Sélection de tests des phases 1 à 3 | 58 tests réussis : 12 backend, 16 Runway, 1 test Fashion pilotant 9 groupes de vérifications, 29 ComfyUI                           |
+| Contrat ComfyUI                     | Tests de transport et de sécurité réussis, avec HTTP simulé ; une vraie base SQLite et un vrai PNG décodé vérifient la persistance |
+| Build de production intégré         | Dernier `npm run build` réussi après les corrections de phase 3                                                                    |
+| Parcours HTTP Fashion en production | 3 groupes réussis avec `npm run test:smoke:fashion`, puis vérifiés à nouveau après les corrections                                 |
+| Navigateur Fashion et Lookbook      | Profil réutilisable et hijab indépendant, deux vêtements importés, look, planche réelle, variante et onglet de collection vérifiés |
+| Langues et conservation du résultat | Changement FR/EN sans perte des données ; enregistrement sans changement conservant le résultat                                    |
+| Affichage mobile et console         | À 390 pixels, aucun débordement horizontal ; aucune erreur du navigateur observée                                                  |
+| Cache des polices Sharp             | Cache local accessible en écriture configuré automatiquement ; absence d'erreur Fontconfig vérifiée                                |
+| Inférence ComfyUI réelle            | Non exécutée ; aucun service, GPU, checkpoint ou poids de modèle installé                                                          |
 
 Les trois groupes HTTP de phase 3 vérifient l'accès privé, les profils, les références et la réutilisation des vêtements ; la file persistante et la création d'un vrai PNG de planche avec coût d'API nul, source non IA et absence de doublon ; les variantes, la copie indépendante des médias et des looks lors d'une duplication de projet, l'archive ZIP et le refus explicite d'une demande IA sans ComfyUI configuré.
 
@@ -34,24 +62,24 @@ La sélection reproduisant les 58 tests est :
 npx vitest run tests/backend.test.ts tests/runway.test.ts tests/fashion.test.ts tests/comfyui.test.ts
 ```
 
-Les fonctionnalités des phases 4 et 5 sont validées et documentées séparément. Les résultats ci-dessus ne revendiquent aucune livraison de ces phases ni aucune génération Fashion IA réelle.
+Les contrôles des phases 4 et 5 sont documentés séparément après exécution. Les résultats ci-dessus couvrent les phases 1 à 3 et ne revendiquent aucune génération Fashion IA réelle.
 
 ## Phases 1 et 2 — Historique des contrôles
 
-| Contrôle | Résultat |
-| --- | --- |
-| Installation figée `npm ci` | Réussie, y compris la génération du client Prisma par `postinstall` |
-| Migrations | `prisma migrate deploy` exécuté deux fois ; aucune migration en attente au second passage |
-| Vérification TypeScript | `npm run typecheck` réussi |
-| Tests unitaires du backend | 12 tests réussis |
-| Tests adaptateur Runway et budget | 16 tests réussis ; les appels au fournisseur sont simulés |
-| Suite des phases 1 et 2 | 28 tests réussis avec `better-sqlite3` 12.11.1, repris dans la sélection de phase 3 |
-| Parcours HTTP réel en mode développement | 9 contrôles réussis avec `SMOKE_DEV=1 npm run test:smoke` |
-| Build de production | `npm run build` réussi |
-| Parcours HTTP réel en mode production | 9 contrôles réussis avec le pilote 12.11.1 |
-| Démarrage standard de développement | `npm run dev` avec Turbopack ; page HTTP 200 et état initial de configuration correct |
-| Audit des dépendances | Aucune vulnérabilité signalée par `npm audit` avec le verrouillage final |
-| Parcours dans un navigateur | Authentification initiale, projets, langues, import, vidéo, paramètres et affichage mobile vérifiés |
+| Contrôle                                 | Résultat                                                                                            |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Installation figée `npm ci`              | Réussie, y compris la génération du client Prisma par `postinstall`                                 |
+| Migrations                               | `prisma migrate deploy` exécuté deux fois ; aucune migration en attente au second passage           |
+| Vérification TypeScript                  | `npm run typecheck` réussi                                                                          |
+| Tests unitaires du backend               | 12 tests réussis                                                                                    |
+| Tests adaptateur Runway et budget        | 16 tests réussis ; les appels au fournisseur sont simulés                                           |
+| Suite des phases 1 et 2                  | 28 tests réussis avec `better-sqlite3` 12.11.1, repris dans la sélection de phase 3                 |
+| Parcours HTTP réel en mode développement | 9 contrôles réussis avec `SMOKE_DEV=1 npm run test:smoke`                                           |
+| Build de production                      | `npm run build` réussi                                                                              |
+| Parcours HTTP réel en mode production    | 9 contrôles réussis avec le pilote 12.11.1                                                          |
+| Démarrage standard de développement      | `npm run dev` avec Turbopack ; page HTTP 200 et état initial de configuration correct               |
+| Audit des dépendances                    | Aucune vulnérabilité signalée par `npm audit` avec le verrouillage final                            |
+| Parcours dans un navigateur              | Authentification initiale, projets, langues, import, vidéo, paramètres et affichage mobile vérifiés |
 
 Le parcours HTTP utilise une base et un stockage temporaires. Il vérifie les migrations répétables, la création du mot de passe, les sessions privées et le refus d'une origine étrangère ; l'import réel d'images et de plusieurs logos ainsi que le refus d'une fausse image et d'un SVG ; la duplication et l'archive ZIP ; le blocage d'une génération payante avec les valeurs par défaut ; la production par le worker d'un vrai MP4 H.264 de cinq secondes, le téléchargement partiel HTTP 206 et l'absence de doublon avec une même clé d'idempotence ; un export réel **3840 × 2160** ; la persistance des projets, des préférences, des médias et de l'authentification après redémarrage ; la déconnexion puis la reconnexion.
 
@@ -81,6 +109,7 @@ npm test
 npm run build
 npm run test:smoke
 npm run test:smoke:fashion
+npm run test:smoke:editor
 ```
 
 Le test `test:smoke` utilise le serveur compilé par défaut : exécutez d'abord le build. Il démarre sa propre instance, sans toucher aux projets de votre instance. Il nécessite FFmpeg/FFprobe et un port libre (`SMOKE_PORT` permet de modifier le port utilisé). Pour le contrôle avec le serveur de développement exécuté ci-dessus :
