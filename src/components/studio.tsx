@@ -342,7 +342,9 @@ function StudioApp({
     null,
   );
   const projects = snapshot?.projects || [],
-    media = snapshot?.media || [],
+    media = (snapshot?.media || []).filter(
+      (item) => !['PREVIEW', 'PREVIEW_COVER'].includes(item.role),
+    ),
     jobs = snapshot?.jobs || [],
     logos = media.filter((m) => m.role === 'LOGO'),
     images = media.filter(
@@ -489,12 +491,19 @@ function StudioApp({
   }
   async function saveProject(quiet = false) {
     if (!project) return;
-    await api(`/api/projects/${project.id}`, 'PATCH', {
-      name: project.name,
-      description: project.description,
-      parameters,
+    await api(`/api/projects/${project.id}/product-state`, 'PATCH', {
+      parameters: Object.fromEntries(
+        Object.keys(baseParameters(settings))
+          .filter((key) => parameters[key as keyof Parameters] !== undefined)
+          .map((key) => [key, parameters[key as keyof Parameters]]),
+      ),
     });
-    await reload();
+    try {
+      await reload();
+    } catch {
+      notify(t('savedRefreshFailed'));
+      return;
+    }
     if (!quiet) notify(t('projectSaved'));
   }
   function setParam<K extends keyof Parameters>(key: K, value: Parameters[K]) {
@@ -905,6 +914,7 @@ function StudioApp({
                     value: jobs.filter(
                       (j) =>
                         j.status === 'SUCCEEDED' &&
+                        j.kind !== 'edit-preview' &&
                         media.some(
                           (m) =>
                             m.id === j.outputMediaId &&

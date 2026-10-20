@@ -37,9 +37,16 @@ export type ImageExportMetadata = {
   sourceKind: 'raster-export';
   costCents: 0;
 };
+export type ImagePreviewMetadata = Omit<ImageExportMetadata, 'sourceKind'> & {
+  sourceKind: 'raster-preview';
+  previewWidth: number;
+  previewHeight: number;
+};
 const PIXEL_LIMIT = 40_000_000;
 const INPUT_LIMIT = 20 * 1024 * 1024;
 const OUTPUT_LIMIT = 50 * 1024 * 1024;
+const PREVIEW_LIMIT = 5 * 1024 * 1024;
+const PREVIEW_EDGE = 1024;
 const ID = /^[A-Za-z0-9_-]{1,128}$/;
 const formats = ['png', 'jpeg', 'webp'];
 const ratios = ['original', '9:16', '4:5', '1:1', '16:9'];
@@ -167,10 +174,11 @@ async function readRaster(filePath: string, limit = INPUT_LIMIT) {
 
 /** Decodes actual raster pixels. SVG, remote URLs and metadata-only formats are
  * excluded; PNG/WebP retain transparency and JPEG flattens onto white. */
-export async function renderImageExport(
+async function renderRaster(
   source: Buffer,
   options: ImageExportOptions,
   logo?: Buffer,
+  preview = false,
 ) {
   if (source.length > INPUT_LIMIT || !sniffImage(source))
     throw new ApiError(400, 'IMAGE_EXPORT_INVALID_IMAGE');
@@ -189,19 +197,24 @@ export async function renderImageExport(
       meta.orientation <= 8;
     const nativeWidth = rotated ? meta.height : meta.width,
       nativeHeight = rotated ? meta.width : meta.height;
-    const { width, height } = imageExportDimensions(
+    const planned = imageExportDimensions(
       nativeWidth,
       nativeHeight,
       options.resolution,
       options.ratio,
     );
+    const scale = preview
+      ? Math.min(1, PREVIEW_EDGE / Math.max(planned.width, planned.height))
+      : 1;
+    const width = Math.max(1, Math.round(planned.width * scale));
+    const height = Math.max(1, Math.round(planned.height * scale));
     let pipeline = sharp(source, {
       limitInputPixels: PIXEL_LIMIT,
       animated: false,
     })
       .rotate()
       .resize(width, height, { fit: 'cover', position: 'centre' })
-      .timeout({ seconds: 30 });
+      .timeout({ seconds: preview ? 10 : 30 });
     if (logo) {
       if (logo.length > 5 * 1024 * 1024 || !sniffImage(logo))
         throw new ApiError(400, 'IMAGE_EXPORT_INVALID_LOGO');
@@ -258,26 +271,101 @@ export async function renderImageExport(
       pipeline = pipeline.webp({ quality: options.quality });
     else pipeline = pipeline.png({ compressionLevel: 9 });
     const output = await pipeline.toBuffer();
-    if (output.length > OUTPUT_LIMIT)
+    if (output.length > (preview ? PREVIEW_LIMIT : OUTPUT_LIMIT))
       throw new ApiError(413, 'IMAGE_EXPORT_OUTPUT_TOO_LARGE');
     const metadata: ImageExportMetadata = {
       nativeWidth,
       nativeHeight,
-      width,
-      height,
-      upscaled: width > nativeWidth || height > nativeHeight,
+      width: planned.width,
+      height: planned.height,
+      upscaled: planned.width > nativeWidth || planned.height > nativeHeight,
       aiUpscaling: false,
       sourceKind: 'raster-export',
       costCents: 0,
     };
-    return { bytes: output, metadata };
+    return {
+      bytes: output,
+      metadata,
+      renderedWidth: width,
+      renderedHeight: height,
+    };
   } catch (error) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(400, 'IMAGE_EXPORT_INVALID_IMAGE');
   }
 }
 
+export async function renderImageExport(
+  source: Buffer,
+  options: ImageExportOptions,
+  logo?: Buffer,
+) {
+  const { bytes, metadata } = await renderRaster(source, options, logo);
+  return { bytes, metadata };
+}
+
+/** The same crop, alpha, logo and encoding pipeline at a bounded display size.
+ * Metadata retains the requested final export dimensions separately. */
+export async function renderImagePreview(
+  source: Buffer,
+  options: ImageExportOptions,
+  logo?: Buffer,
+) {
+  const rendered = await renderRaster(source, options, logo, true);
+  const metadata: ImagePreviewMetadata = {
+    ...rendered.metadata,
+    sourceKind: 'raster-preview',
+    previewWidth: rendered.renderedWidth,
+    previewHeight: rendered.renderedHeight,
+  };
+  return {
+    bytes: rendered.bytes,
+    metadata,
+    mimeType: `image/${options.format}`,
+  };
+}
+
 let exporting = false;
+/** Reads private local media and returns a transient preview only. It never
+ * creates files, database rows, project references or generation history. */
+export async function previewImage(
+  sourceMediaId: string,
+  input: Record<string, unknown>,
+) {
+  if (!ID.test(sourceMediaId))
+    throw new ApiError(400, 'IMAGE_EXPORT_INVALID_OPTIONS');
+  const options = parseImageExportOptions(input);
+  if (exporting) throw new ApiError(429, 'IMAGE_EXPORT_BUSY');
+  exporting = true;
+  try {
+    const source = await db.media.findUnique({ where: { id: sourceMediaId } });
+    if (
+      !source ||
+      !['image/png', 'image/jpeg', 'image/webp'].includes(source.mimeType)
+    )
+      throw new ApiError(400, 'IMAGE_EXPORT_INVALID_IMAGE');
+    const logo = options.logoId
+      ? await db.media.findUnique({ where: { id: options.logoId } })
+      : null;
+    if (
+      options.logoId &&
+      (!logo ||
+        logo.role !== 'LOGO' ||
+        !['image/png', 'image/jpeg', 'image/webp'].includes(logo.mimeType))
+    )
+      throw new ApiError(400, 'IMAGE_EXPORT_LOGO_NOT_FOUND');
+    return await renderImagePreview(
+      await readRaster(resolveMediaPath(source.path)),
+      options,
+      logo
+        ? await readRaster(resolveMediaPath(logo.path), 5 * 1024 * 1024)
+        : undefined,
+    );
+  } finally {
+    exporting = false;
+  }
+}
+
 export async function exportImage(
   sourceMediaId: string,
   input: Record<string, unknown>,

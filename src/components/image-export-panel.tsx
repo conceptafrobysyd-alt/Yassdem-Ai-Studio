@@ -1,13 +1,14 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef, useState } from 'react';
-import { Download, Image as ImageIcon, LoaderCircle } from 'lucide-react';
+import { Download, Eye, Image as ImageIcon, LoaderCircle } from 'lucide-react';
 import { Badge, Button, Field, Input, Select } from './ui/primitives';
 import { imageExportMessages } from '@/messages/image-export';
 import type {
   ImageExportMetadata,
   ImageExportOptions,
   ImageLogoPosition,
+  ImagePreviewMetadata,
 } from '@/lib/image-export';
 import './image-export.css';
 
@@ -93,9 +94,46 @@ export function ImageExportPanel({
     media: ImageExportMedia;
     metadata: ImageExportMetadata;
   } | null>(null);
+  const [preview, setPreview] = useState<{
+    url: string;
+    fingerprint: string;
+    metadata: ImagePreviewMetadata;
+  } | null>(null);
+  const [previewing, setPreviewing] = useState(false);
+  const previewRequest = useRef<{
+    controller: AbortController;
+    sequence: number;
+  } | null>(null);
+  const previewSequence = useRef(0);
+  const previewObjectUrl = useRef<string | null>(null);
+  const fingerprint = JSON.stringify({ sourceId, options });
+  const currentFingerprint = useRef(fingerprint);
+  currentFingerprint.current = fingerprint;
+  const currentPreview = preview?.fingerprint === fingerprint ? preview : null;
   const source = images.find((item) => item.id === sourceId);
+  function releasePreviewUrl() {
+    if (previewObjectUrl.current) URL.revokeObjectURL(previewObjectUrl.current);
+    previewObjectUrl.current = null;
+  }
+  function discardPreview() {
+    previewRequest.current?.controller.abort();
+    previewRequest.current = null;
+    previewSequence.current++;
+    releasePreviewUrl();
+    setPreviewing(false);
+    setPreview(null);
+  }
+  useEffect(
+    () => () => {
+      previewSequence.current++;
+      previewRequest.current?.controller.abort();
+      releasePreviewUrl();
+    },
+    [],
+  );
   useEffect(() => {
     if (initialMediaId) {
+      discardPreview();
       setSourceId(initialMediaId);
       setResult(null);
     }
@@ -103,11 +141,83 @@ export function ImageExportPanel({
   useEffect(() => {
     if (!sourceId && images[0]) setSourceId(images[0].id);
   }, [images, sourceId]);
+  useEffect(() => {
+    if (sourceId && !source) discardPreview();
+  }, [sourceId, source?.id]);
   function patch<K extends keyof ImageExportOptions>(
     key: K,
     value: ImageExportOptions[K],
   ) {
+    discardPreview();
     setOptions((previous) => ({ ...previous, [key]: value }));
+  }
+  async function createPreview() {
+    if (!source || busyRef.current || previewRequest.current) return;
+    const controller = new AbortController();
+    const sequence = ++previewSequence.current;
+    const requestedFingerprint = fingerprint;
+    previewRequest.current = { controller, sequence };
+    setPreviewing(true);
+    setError('');
+    try {
+      const response = await fetch(
+        `/api/media/${encodeURIComponent(source.id)}/preview`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(options),
+          signal: controller.signal,
+        },
+      );
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(
+          data.error?.code === 'IMAGE_EXPORT_BUSY' ? t.busy : t.previewError,
+        );
+      }
+      const metadata = JSON.parse(
+        response.headers.get('X-Yassdem-Image-Preview') || 'null',
+      ) as ImagePreviewMetadata | null;
+      if (
+        !metadata ||
+        metadata.sourceKind !== 'raster-preview' ||
+        !Number.isInteger(metadata.previewWidth) ||
+        metadata.previewWidth < 1 ||
+        metadata.previewWidth > 1024 ||
+        !Number.isInteger(metadata.previewHeight) ||
+        metadata.previewHeight < 1 ||
+        metadata.previewHeight > 1024
+      )
+        throw new Error(t.previewError);
+      const blob = await response.blob();
+      if (
+        blob.size > 5 * 1024 * 1024 ||
+        !['image/png', 'image/jpeg', 'image/webp'].includes(blob.type)
+      )
+        throw new Error(t.previewError);
+      if (
+        controller.signal.aborted ||
+        sequence !== previewSequence.current ||
+        currentFingerprint.current !== requestedFingerprint
+      )
+        return;
+      releasePreviewUrl();
+      const url = URL.createObjectURL(blob);
+      previewObjectUrl.current = url;
+      setPreview({ url, fingerprint: requestedFingerprint, metadata });
+    } catch (value) {
+      if (!controller.signal.aborted && sequence === previewSequence.current)
+        setError(
+          value instanceof Error && value.message === t.busy
+            ? t.busy
+            : t.previewError,
+        );
+    } finally {
+      if (sequence === previewSequence.current) {
+        previewRequest.current = null;
+        setPreviewing(false);
+      }
+    }
   }
   async function createExport() {
     if (!source || busyRef.current) return;
@@ -158,10 +268,17 @@ export function ImageExportPanel({
       setBusy(false);
     }
   }
-  const dimensions = plannedDimensions(source, options);
+  const dimensions = currentPreview
+    ? {
+        width: currentPreview.metadata.width,
+        height: currentPreview.metadata.height,
+      }
+    : plannedDimensions(source, options);
+  const nativeWidth = currentPreview?.metadata.nativeWidth ?? source?.width;
+  const nativeHeight = currentPreview?.metadata.nativeHeight ?? source?.height;
   const upscaled =
-    dimensions && source?.width && source.height
-      ? dimensions.width > source.width || dimensions.height > source.height
+    dimensions && nativeWidth && nativeHeight
+      ? dimensions.width > nativeWidth || dimensions.height > nativeHeight
       : options.resolution === '4k';
   const positions: [ImageLogoPosition, keyof typeof t][] = [
     ['top-left', 'topLeft'],
@@ -191,6 +308,7 @@ export function ImageExportPanel({
                   <Select
                     value={sourceId}
                     onChange={(event) => {
+                      discardPreview();
                       setSourceId(event.target.value);
                       setResult(null);
                       setNotice('');
@@ -345,13 +463,26 @@ export function ImageExportPanel({
                 )}
               </fieldset>
               <div className="image-export-preview">
-                {source && <img src={source.url} alt={source.name} />}
+                {source && (
+                  <img
+                    src={currentPreview?.url || source.url}
+                    alt={currentPreview ? t.previewResult : source.name}
+                  />
+                )}
+                <p
+                  className="field-hint image-preview-caption"
+                  aria-live="polite"
+                >
+                  {currentPreview
+                    ? `${t.previewReady} · ${currentPreview.metadata.previewWidth} × ${currentPreview.metadata.previewHeight}`
+                    : t.sourceBeforePreview}
+                </p>
                 <dl>
                   <div>
                     <dt>{t.sourceDimensions}</dt>
                     <dd>
-                      {source?.width && source.height
-                        ? `${source.width} × ${source.height}`
+                      {nativeWidth && nativeHeight
+                        ? `${nativeWidth} × ${nativeHeight}`
                         : t.unknownDimensions}
                     </dd>
                   </div>
@@ -371,17 +502,31 @@ export function ImageExportPanel({
               </div>
             </div>
             <p className="field-hint">{t.local}</p>
-            <Button
-              disabled={busy || !source}
-              onClick={() => void createExport()}
-            >
-              {busy ? (
-                <LoaderCircle size={16} className="spin" />
-              ) : (
-                <Download size={16} />
-              )}
-              {busy ? t.exporting : t.export}
-            </Button>
+            <div className="image-export-actions">
+              <Button
+                variant="secondary"
+                disabled={busy || previewing || !source}
+                onClick={() => void createPreview()}
+              >
+                {previewing ? (
+                  <LoaderCircle size={16} className="spin" />
+                ) : (
+                  <Eye size={16} />
+                )}
+                {previewing ? t.previewing : t.preview}
+              </Button>
+              <Button
+                disabled={busy || previewing || !source}
+                onClick={() => void createExport()}
+              >
+                {busy ? (
+                  <LoaderCircle size={16} className="spin" />
+                ) : (
+                  <Download size={16} />
+                )}
+                {busy ? t.exporting : t.export}
+              </Button>
+            </div>
             {result && (
               <div className="image-export-result">
                 <img src={result.media.url} alt={t.result} />

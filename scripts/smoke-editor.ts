@@ -318,12 +318,30 @@ async function main() {
       (await call(renderPath, { idempotencyKey: randomUUID() })).status,
       400,
     );
+    assert.equal(
+      (
+        await call(renderPath, {
+          mode: 'preview',
+          idempotencyKey: randomUUID(),
+        })
+      ).status,
+      400,
+    );
+    const previewRequest = {
+      mode: 'preview',
+      idempotencyKey: randomUUID(),
+      musicRightsConfirmed: true,
+    };
+    const previewQueued = (await json(renderPath, previewRequest)).job;
+    assert.equal(previewQueued.kind, 'edit-preview');
+    assert.equal(
+      (await json(renderPath, previewRequest)).job.id,
+      previewQueued.id,
+    );
     const request = {
       idempotencyKey: randomUUID(),
       musicRightsConfirmed: true,
     };
-    const queued = (await json(renderPath, request)).job;
-    assert.equal((await json(renderPath, request)).job.id, queued.id);
     assert.equal((await json('/api/jobs')).jobs.length, 1);
     console.log(
       'PASS private editor APIs, decoded audio uploads, saved ordered trims, media protection and music rights/idempotency gates',
@@ -398,6 +416,53 @@ async function main() {
     );
 
     worker = start(['--import', 'tsx', 'src/worker.ts']);
+    let previewFinished;
+    for (let attempt = 0; attempt < 240; attempt++) {
+      previewFinished = (await json('/api/jobs/' + previewQueued.id)).job;
+      if (previewFinished.status === 'SUCCEEDED') break;
+      if (['FAILED', 'UNKNOWN', 'CANCELLED'].includes(previewFinished.status))
+        throw new Error(JSON.stringify(previewFinished));
+      await delay(250);
+    }
+    assert.equal(previewFinished?.status, 'SUCCEEDED');
+    assert.equal(previewFinished.parameters.sourceKind, 'editor-preview');
+    assert.equal(previewFinished.parameters.preview, true);
+    assert.equal(previewFinished.parameters.exportWidth, 360);
+    assert.equal(previewFinished.parameters.exportHeight, 360);
+    assert.deepEqual(previewFinished.parameters.timeline, timeline);
+    assert.deepEqual(
+      (await json('/api/editor/' + project.id)).timeline,
+      timeline,
+    );
+    const mediaBeforeFinal = (await json('/api/media')).media;
+    assert.ok(
+      mediaBeforeFinal.every(
+        (item: { role: string }) => item.role !== 'EXPORT',
+      ),
+    );
+    const previewMedia = mediaBeforeFinal.find(
+      (item: { id: string }) => item.id === previewFinished.outputMediaId,
+    );
+    assert.equal(previewMedia.role, 'PREVIEW');
+    const previewResponse = await call(
+      '/api/media/' + previewFinished.outputMediaId,
+    );
+    const previewPath = path.join(directory, 'preview.mp4');
+    await writeFile(
+      previewPath,
+      Buffer.from(await previewResponse.arrayBuffer()),
+    );
+    const previewFrame = await frame(previewPath, 0.6);
+    assert.equal(previewFrame.info.width, 360);
+    assert.equal(previewFrame.info.height, 360);
+    assert.ok(pixel(previewFrame, 180, 180)[2] > 200);
+    assert.ok(pixel(previewFrame, 25, 25)[1] > 200);
+    console.log(
+      'PASS actual 360p composition preview before final export, with preserved final timeline and distinct media',
+    );
+    const queued = (await json(renderPath, request)).job;
+    assert.equal((await json(renderPath, request)).job.id, queued.id);
+    assert.equal((await json('/api/jobs')).jobs.length, 2);
     let finished;
     for (let attempt = 0; attempt < 240; attempt++) {
       finished = (await json('/api/jobs/' + queued.id)).job;
@@ -488,7 +553,7 @@ async function main() {
     );
     const settings = (await json('/api/bootstrap')).settings;
     assert.equal(settings.monthlyBudgetCents, 0);
-    assert.equal((await json('/api/jobs')).jobs.length, 1);
+    assert.equal((await json('/api/jobs')).jobs.length, 2);
     console.log(
       'PASS persistent FFmpeg worker renders real ordered/faded H264/AAC video, audible music, logo, JPEG cover and ZIP without paid generation',
     );

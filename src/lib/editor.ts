@@ -367,6 +367,8 @@ export interface RenderEditorOptions {
   logo?: ExportLogo;
   outputPath: string;
   coverPath: string;
+  /** Lightweight local composition; final timeline settings remain untouched. */
+  preview?: boolean;
 }
 /** Render ordered, trimmed clips, their original audio, captions, music and a logo. */
 export async function renderEditorTimeline(options: RenderEditorOptions) {
@@ -395,7 +397,9 @@ export async function renderEditorTimeline(options: RenderEditorOptions) {
     if (await stat(path).catch(() => null))
       throw new EditorError('EXPORT_ALREADY_EXISTS');
   }
-  await checkExportSupport(timeline.codec);
+  const outputCodec = options.preview ? 'h264' : timeline.codec;
+  const outputQuality = options.preview ? 28 : timeline.quality;
+  await checkExportSupport(outputCodec);
   const sources = await Promise.all(options.clipPaths.map(probeEditorInput));
   timeline.clips.forEach((clip, index) => {
     if (
@@ -415,10 +419,14 @@ export async function renderEditorTimeline(options: RenderEditorOptions) {
     join(dirname(options.outputPath), '.editor-'),
   );
   try {
-    const { width, height } = getExportDimensions(
+    const finalDimensions = getExportDimensions(
       timeline.format,
       timeline.resolution,
     );
+    const previewScale = options.preview ? 360 / timeline.resolution : 1;
+    const width = Math.round((finalDimensions.width * previewScale) / 2) * 2;
+    const height = Math.round((finalDimensions.height * previewScale) / 2) * 2;
+    const margin = 24 * previewScale;
     const duration = editorDuration(timeline);
     const args = [
       '-nostdin',
@@ -514,10 +522,10 @@ export async function renderEditorTimeline(options: RenderEditorOptions) {
         options.logo.path,
       );
       const positions: Record<LogoPosition, string> = {
-        'top-left': '24:24',
-        'top-right': 'W-w-24:24',
-        'bottom-left': '24:H-h-24',
-        'bottom-right': 'W-w-24:H-h-24',
+        'top-left': `${margin}:${margin}`,
+        'top-right': `W-w-${margin}:${margin}`,
+        'bottom-left': `${margin}:H-h-${margin}`,
+        'bottom-right': `W-w-${margin}:H-h-${margin}`,
         center: '(W-w)/2:(H-h)/2',
       };
       const timing = getLogoTimingWindow(duration, timeline.logoTiming, 0.35);
@@ -539,12 +547,19 @@ export async function renderEditorTimeline(options: RenderEditorOptions) {
       });
       const y =
         caption.position === 'top'
-          ? '24'
+          ? String(margin)
           : caption.position === 'center'
             ? '(h-text_h)/2'
-            : 'h-text_h-24';
+            : `h-text_h-${margin}`;
+      const fontSize = Math.max(
+        1,
+        Math.max(
+          24,
+          Math.min(120, Math.round(finalDimensions.height * 0.035)),
+        ) * previewScale,
+      );
       filters.push(
-        `[${video}]drawtext=fontfile=caption-font.ttf:textfile=caption-${i}.txt:expansion=none:fontsize=${Math.max(24, Math.min(120, Math.round(height * 0.035)))}:fontcolor=white:box=1:boxcolor=black@0.55:boxborderw=12:x=(w-text_w)/2:y=${y}:enable='between(t,${caption.startSeconds},${caption.endSeconds})'[caption${i}]`,
+        `[${video}]drawtext=fontfile=caption-font.ttf:textfile=caption-${i}.txt:expansion=none:fontsize=${fontSize}:fontcolor=white:box=1:boxcolor=black@0.55:boxborderw=${12 * previewScale}:x=(w-text_w)/2:y=${y}:enable='between(t,${caption.startSeconds},${caption.endSeconds})'[caption${i}]`,
       );
       video = `caption${i}`;
     }
@@ -560,13 +575,13 @@ export async function renderEditorTimeline(options: RenderEditorOptions) {
       '-r',
       '24',
       '-c:v',
-      timeline.codec === 'h265' ? 'libx265' : 'libx264',
+      outputCodec === 'h265' ? 'libx265' : 'libx264',
       '-threads',
       '2',
       '-preset',
       'veryfast',
       '-crf',
-      String(timeline.quality),
+      String(outputQuality),
       '-pix_fmt',
       'yuv420p',
       '-c:a',
@@ -574,7 +589,7 @@ export async function renderEditorTimeline(options: RenderEditorOptions) {
       '-b:a',
       '192k',
     );
-    if (timeline.codec === 'h265')
+    if (outputCodec === 'h265')
       args.push(
         '-tag:v',
         'hvc1',
@@ -594,7 +609,11 @@ export async function renderEditorTimeline(options: RenderEditorOptions) {
       ffmpegPath(),
       args,
       directory,
-      timeline.resolution === 2160 ? 900_000 : 600_000,
+      options.preview
+        ? 180_000
+        : timeline.resolution === 2160
+          ? 900_000
+          : 600_000,
     );
     const output = await probeMedia(options.outputPath);
     const bytes = (await stat(options.outputPath)).size;
@@ -637,13 +656,15 @@ export async function renderEditorTimeline(options: RenderEditorOptions) {
       durationSeconds: output.durationSeconds,
       bytes,
       coverBytes,
-      codec: timeline.codec,
+      codec: outputCodec,
       aiUpscaling: false as const,
       upscaled: sources.some(
         (source) =>
           width > (source.width ?? width) || height > (source.height ?? height),
       ),
-      sourceKind: 'editor' as const,
+      sourceKind: options.preview
+        ? ('editor-preview' as const)
+        : ('editor' as const),
     };
   } catch (error) {
     await Promise.all(

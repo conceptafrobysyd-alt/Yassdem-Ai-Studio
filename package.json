@@ -11,7 +11,7 @@
     "worker": "tsx src/worker.ts",
     "build": "next build --webpack",
     "start": "concurrently -k -n web,worker \"next start --hostname 127.0.0.1\" \"tsx src/worker.ts\"",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "db:generate": "prisma generate",
     "db:deploy": "prisma migrate deploy",

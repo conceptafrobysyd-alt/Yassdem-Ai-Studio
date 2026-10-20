@@ -32,6 +32,15 @@
   display: block;
   border-radius: 8px;
 }
+.image-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.image-preview-caption {
+  min-height: 2.8em;
+}
 .image-export-preview dl {
   font-size: 12px;
   display: grid;

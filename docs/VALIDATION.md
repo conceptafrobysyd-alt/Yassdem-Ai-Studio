@@ -12,6 +12,14 @@ Résultats constatés les **19 et 20 octobre 2026** dans l'environnement Linux c
 | Prisma                  | 6.19.0, moteur JavaScript et adaptateur SQLite officiel |
 | better-sqlite3 / SQLite | 12.11.1 / 3.53.2                                        |
 
+## Compléments — Aperçus et sauvegarde des ateliers
+
+Les 24 tests ciblés passent : 12 pour le montage, 10 pour l’export d’image et 2 pour la sauvegarde des réglages produit. Ils contrôlent les vrais pixels et le son des aperçus, leurs dimensions, la conservation des réglages finaux, l’authentification, l’absence d’écriture pour l’aperçu d’image et la conservation des paramètres récents des autres ateliers lors d’un enregistrement produit.
+
+Le build de production et `npm run typecheck` avec génération des types Next.js réussissent. Le parcours `npm run test:smoke:editor` passe désormais quatre groupes, dont un aperçu composé 360p produit avant toute tâche d’export final.
+
+Dans Chromium, la vidéo d’aperçu se lit réellement avant un export définitif, en conservant les réglages finaux 1080p/H.265/CRF18. L’aperçu d’image montre les vrais pixels rouges du logo, ne crée pas de média enregistré et disparaît lorsque son opacité est modifiée. Aucune erreur du navigateur n’a été observée dans ces parcours.
+
 ## Phase 5 — Fournisseurs et finitions
 
 | Contrôle                                   | Résultat                                                                                                                                                                                   |

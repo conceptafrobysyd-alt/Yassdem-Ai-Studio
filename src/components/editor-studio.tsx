@@ -164,7 +164,9 @@ export function EditorStudio({
   const [newProject, setNewProject] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [clipIndex, setClipIndex] = useState(0);
-  const [previewKind, setPreviewKind] = useState<'source' | 'output'>('source');
+  const [previewKind, setPreviewKind] = useState<
+    'source' | 'composition' | 'output'
+  >('source');
   const [selectedJobId, setSelectedJobId] = useState('');
   const [videoFailed, setVideoFailed] = useState(false);
   const drafts = useRef(new Map<string, Draft>());
@@ -192,10 +194,13 @@ export function EditorStudio({
     ],
     [media, extraMedia],
   );
-  const videos = allMedia.filter((item) => item.mimeType === 'video/mp4');
+  const videos = allMedia.filter(
+    (item) => item.mimeType === 'video/mp4' && item.role !== 'PREVIEW',
+  );
   const music = allMedia.filter(
     (item) =>
-      item.mimeType.startsWith('audio/') || item.mimeType === 'video/mp4',
+      item.role !== 'PREVIEW' &&
+      (item.mimeType.startsWith('audio/') || item.mimeType === 'video/mp4'),
   );
   const logos = allMedia.filter(
     (item) => item.role === 'LOGO' && item.mimeType.startsWith('image/'),
@@ -212,15 +217,28 @@ export function EditorStudio({
         map.set(local.id, local);
     }
     return [...map.values()]
-      .filter((job) => job.kind === 'edit')
+      .filter((job) => job.kind === 'edit' || job.kind === 'edit-preview')
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [jobs, localJobs]);
   const projectJobs = allJobs.filter((job) => job.projectId === projectId);
   const outputJobs = projectJobs.filter(
-    (job) => job.status === 'SUCCEEDED' && job.outputMediaId,
+    (job) =>
+      job.kind === 'edit' && job.status === 'SUCCEEDED' && job.outputMediaId,
   );
   const outputJob =
     outputJobs.find((job) => job.id === selectedJobId) || outputJobs[0];
+  const previewJobs = projectJobs.filter(
+    (job) =>
+      job.kind === 'edit-preview' &&
+      job.status === 'SUCCEEDED' &&
+      job.outputMediaId,
+  );
+  const previewJob =
+    previewJobs.find((job) => job.id === selectedJobId) || previewJobs[0];
+  const previewMatchesDraft = Boolean(
+    previewJob &&
+    JSON.stringify(previewJob.parameters.timeline) === JSON.stringify(timeline),
+  );
   const selectedClip = timeline.clips[clipIndex] || timeline.clips[0];
   const source = selectedClip
     ? allMedia.find((item) => item.id === selectedClip.mediaId)
@@ -378,7 +396,7 @@ export function EditorStudio({
   }, [activeIds]);
   useEffect(() => {
     setVideoFailed(false);
-  }, [source?.id, outputJob?.id, previewKind]);
+  }, [source?.id, outputJob?.id, previewJob?.id, previewKind]);
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => setNotice(null), 9000);
@@ -497,7 +515,7 @@ export function EditorStudio({
     onRefreshRef.current().catch(() => {});
     return { id, timeline: next };
   }
-  async function render() {
+  async function render(mode: 'preview' | 'export' = 'export') {
     if (timeline.musicMediaId && !rights)
       throw new EditorRequestError('MUSIC_RIGHTS_REQUIRED');
     const result = await persist(false);
@@ -505,19 +523,25 @@ export function EditorStudio({
       projectId: result.id,
       timeline: result.timeline,
       rights,
+      mode,
     });
     if (pendingRender.current?.fingerprint !== fingerprint)
       pendingRender.current = { fingerprint, key: crypto.randomUUID() };
     const response = await request(`/api/editor/${result.id}/render`, 'POST', {
       idempotencyKey: pendingRender.current.key,
       musicRightsConfirmed: rights,
+      mode,
     });
     pendingRender.current = null;
     setLocalJobs((previous) => [
       response.job,
       ...previous.filter((job) => job.id !== response.job.id),
     ]);
-    notify(t('renderStarted'));
+    if (mode === 'preview') {
+      setSelectedJobId(response.job.id);
+      setPreviewKind('composition');
+    }
+    notify(t(mode === 'preview' ? 'previewStarted' : 'renderStarted'));
     onRefreshRef.current().catch(() => {});
   }
   const statusKey = (status: string): EditorMessageKey =>
@@ -540,13 +564,16 @@ export function EditorStudio({
     { value: 'bottom-right', label: 'bottomRight' },
     { value: 'center', label: 'center' },
   ] as const;
+  const renderedJob = previewKind === 'composition' ? previewJob : outputJob;
   const previewUrl =
-    previewKind === 'output' && outputJob?.outputMediaId
-      ? `/api/media/${outputJob.outputMediaId}`
-      : source?.url;
+    previewKind === 'source'
+      ? source?.url
+      : renderedJob?.outputMediaId
+        ? `/api/media/${renderedJob.outputMediaId}`
+        : undefined;
   const coverId =
-    typeof outputJob?.parameters.coverMediaId === 'string'
-      ? outputJob.parameters.coverMediaId
+    typeof renderedJob?.parameters.coverMediaId === 'string'
+      ? renderedJob.parameters.coverMediaId
       : undefined;
   return (
     <div className="editor-module">
@@ -1276,6 +1303,13 @@ export function EditorStudio({
                 {t('sourcePreview')}
               </button>
               <button
+                className={cn(previewKind === 'composition' && 'active')}
+                onClick={() => setPreviewKind('composition')}
+                disabled={!previewJob}
+              >
+                {t('compositionPreview')}
+              </button>
+              <button
                 className={cn(previewKind === 'output' && 'active')}
                 onClick={() => setPreviewKind('output')}
                 disabled={!outputJob}
@@ -1292,7 +1326,7 @@ export function EditorStudio({
                   playsInline
                   preload="metadata"
                   poster={
-                    previewKind === 'output' && coverId
+                    previewKind !== 'source' && coverId
                       ? `/api/media/${coverId}`
                       : undefined
                   }
@@ -1330,6 +1364,14 @@ export function EditorStudio({
               <p className={cn('field-hint', videoFailed && 'editor-error')}>
                 {t(videoFailed ? 'previewError' : 'previewHelp')}
               </p>
+              {previewKind === 'composition' &&
+                previewJob &&
+                !previewMatchesDraft && (
+                  <p className="inline-notice">{t('previewStale')}</p>
+                )}
+              {previewKind === 'composition' && (
+                <p className="field-hint">{t('previewQuality')}</p>
+              )}
               <div className="editor-export-stats">
                 <div>
                   <span>{t('duration')}</span>
@@ -1338,20 +1380,50 @@ export function EditorStudio({
                   </strong>
                 </div>
                 <div>
-                  <span>{t('resolution')}</span>
+                  <span>
+                    {t(
+                      previewKind === 'composition'
+                        ? 'previewResolution'
+                        : 'resolution',
+                    )}
+                  </span>
                   <strong>
-                    {timeline.resolution === 2160
-                      ? '4K'
-                      : `${timeline.resolution}p`}
+                    {previewKind === 'composition'
+                      ? '360p'
+                      : timeline.resolution === 2160
+                        ? '4K'
+                        : `${timeline.resolution}p`}
                   </strong>
                 </div>
                 <div>
                   <span>MP4</span>
                   <strong>
-                    {timeline.codec === 'h265' ? 'H.265' : 'H.264'}
+                    {previewKind !== 'composition' && timeline.codec === 'h265'
+                      ? 'H.265'
+                      : 'H.264'}
                   </strong>
                 </div>
               </div>
+              <Button
+                variant="secondary"
+                className="editor-export-button"
+                disabled={
+                  !!busy ||
+                  loading ||
+                  loadFailed ||
+                  !timeline.clips.length ||
+                  (Boolean(timeline.musicMediaId) && !rights)
+                }
+                onClick={() => void act('preview', () => render('preview'))}
+              >
+                {busy === 'preview' ? (
+                  <LoaderCircle size={16} className="spin" />
+                ) : (
+                  <Play size={16} />
+                )}
+                {t('renderPreview')}
+              </Button>
+              <p className="field-hint">{t('previewQuality')}</p>
               <Button
                 className="editor-export-button"
                 disabled={
@@ -1361,7 +1433,7 @@ export function EditorStudio({
                   !timeline.clips.length ||
                   (Boolean(timeline.musicMediaId) && !rights)
                 }
-                onClick={() => void act('render', render)}
+                onClick={() => void act('render', () => render())}
               >
                 {busy === 'render' ? (
                   <LoaderCircle size={16} className="spin" />
@@ -1417,7 +1489,12 @@ export function EditorStudio({
                           )}
                         </span>
                         <div>
-                          <strong>{t(statusKey(job.status))}</strong>
+                          <strong>
+                            {job.kind === 'edit-preview'
+                              ? `${t('compositionPreview')} · `
+                              : ''}
+                            {t(statusKey(job.status))}
+                          </strong>
                           <small>
                             {new Intl.DateTimeFormat(
                               locale === 'fr' ? 'fr-FR' : 'en-GB',
@@ -1480,7 +1557,11 @@ export function EditorStudio({
                             className="editor-output-thumb"
                             onClick={() => {
                               setSelectedJobId(job.id);
-                              setPreviewKind('output');
+                              setPreviewKind(
+                                job.kind === 'edit-preview'
+                                  ? 'composition'
+                                  : 'output',
+                              );
                             }}
                           >
                             {jobCover ? (
@@ -1501,7 +1582,11 @@ export function EditorStudio({
                               download={`yassdem-${job.id}.mp4`}
                             >
                               <ArrowDownToLine size={13} />
-                              {t('download')}
+                              {t(
+                                job.kind === 'edit-preview'
+                                  ? 'downloadPreview'
+                                  : 'download',
+                              )}
                             </a>
                             {jobCover && (
                               <a

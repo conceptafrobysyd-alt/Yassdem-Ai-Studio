@@ -37,6 +37,14 @@ const fr = {
   local:
     'Traitement local · coût d’API : 0 € · généralement quelques secondes ; la durée dépend de l’image et de la machine.',
   export: 'Créer l’image',
+  preview: 'Prévisualiser les réglages',
+  previewing: 'Calcul de l’aperçu…',
+  previewReady: 'Aperçu calculé avec le cadrage et le logo',
+  previewResult: 'Aperçu de l’image avec les réglages choisis',
+  sourceBeforePreview:
+    'Source originale. Prévisualisez pour voir le cadrage, le logo et l’opacité avant de créer le fichier final.',
+  previewError:
+    'Impossible de calculer l’aperçu. Vérifiez les fichiers et réessayez.',
   exporting: 'Export en cours…',
   saved: 'Image enregistrée dans la bibliothèque.',
   download: 'Télécharger',
@@ -89,6 +97,13 @@ const en: typeof fr = {
   local:
     'Local processing · API cost: €0 · usually a few seconds; duration depends on the image and machine.',
   export: 'Create image',
+  preview: 'Preview settings',
+  previewing: 'Rendering preview…',
+  previewReady: 'Rendered preview with crop and logo',
+  previewResult: 'Image preview with the selected settings',
+  sourceBeforePreview:
+    'Original source. Preview the crop, logo and opacity before creating the final file.',
+  previewError: 'Could not render the preview. Check the files and try again.',
   exporting: 'Exporting…',
   saved: 'Image saved to the library.',
   download: 'Download',

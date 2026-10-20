@@ -13,7 +13,7 @@ Cette phase ajoute un montage local de plusieurs vidéos et un atelier de prépa
 
 La séquence accepte au maximum 12 clips et 120 secondes de sources, avec au moins 0,5 seconde par clip. Un fondu chevauche les deux clips pendant 0,35 seconde et réduit donc la durée finale. Les textes sont limités à 40 entrées, 500 caractères et quatre lignes par entrée. Leurs horaires doivent rester dans la durée finale.
 
-L'aperçu avant export montre le clip source sélectionné. Le résultat assemblé, les textes et les effets sont visibles après l'export : il n'y a pas de prévisualisation interactive du montage complet. La couverture est une image extraite automatiquement du résultat, sans outil de mise en page distinct.
+Le clip source reste consultable. Le bouton **Prévisualiser le montage** calcule aussi le montage complet en 360p H.264, avec textes, effets et son, avant l’export définitif. Cet aperçu demande un rendu local ; il ne constitue pas une prévisualisation instantanée dans le navigateur et conserve les réglages de qualité finale. La couverture est une image extraite automatiquement du résultat, sans outil de mise en page distinct.
 
 Le son original des clips est conservé. Les clips muets reçoivent une piste de silence pour permettre leur assemblage. La musique ajoutée est répétée si nécessaire et mélangée au son original, avec le volume choisi. L'application n'inclut ni catalogue de musique, ni licence musicale. La confirmation de droits est obligatoire côté serveur pour chaque export comportant une musique ajoutée ; la conserver dans la médiathèque ne vaut pas autorisation d'utilisation.
 

@@ -57,4 +57,4 @@ Kling, les modèles Replicate demandant un autre schéma d'entrée et l'optimisa
 
 L'import depuis une URL produit, le scraping, les publications sur les réseaux sociaux et Pippit ne sont pas intégrés. Aucun bouton ne doit être interprété comme une activation de ces services.
 
-Le montage montre le clip source avant export ; le résultat complet est visible après rendu. Le texte alternatif Pinterest reste à adapter au visuel final. Un CSV préparé exige une URL publique de média et une vérification manuelle avant import. Le [guide de phase 4](PHASE_4.md) précise ces limites.
+Le montage propose un aperçu complet à 360p avant l’export définitif. L’export d’image calcule aussi un aperçu réel du cadrage et du logo sans enregistrer de média. Le [guide des compléments](COMPLEMENTS.md) précise ce fonctionnement. Le texte alternatif Pinterest reste à adapter au visuel final. Un CSV préparé exige une URL publique de média et une vérification manuelle avant import.

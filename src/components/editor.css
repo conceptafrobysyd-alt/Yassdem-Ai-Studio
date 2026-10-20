@@ -485,6 +485,7 @@
 }
 .editor-preview-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 15px;
   align-items: center;
   padding: 13px 18px 0;

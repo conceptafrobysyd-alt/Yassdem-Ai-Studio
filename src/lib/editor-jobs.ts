@@ -94,6 +94,14 @@ export async function enqueueEditorJob(
   input: Record<string, unknown>,
 ) {
   if (
+    input.mode !== undefined &&
+    input.mode !== 'preview' &&
+    input.mode !== 'export'
+  )
+    throw new EditorError('INVALID_EDITOR_MODE');
+  const preview = input.mode === 'preview';
+  const kind = preview ? 'edit-preview' : 'edit';
+  if (
     typeof input.idempotencyKey !== 'string' ||
     !/^[A-Za-z0-9_-]{8,128}$/.test(input.idempotencyKey)
   )
@@ -102,7 +110,7 @@ export async function enqueueEditorJob(
   return db.$transaction(async (tx) => {
     const existing = await tx.job.findUnique({ where: { idempotencyKey } });
     if (existing) {
-      if (existing.projectId !== projectId || existing.kind !== 'edit')
+      if (existing.projectId !== projectId || existing.kind !== kind)
         throw new EditorError('IDEMPOTENCY_CONFLICT', 409);
       return existing;
     }
@@ -126,7 +134,7 @@ export async function enqueueEditorJob(
         projectId,
         sourceMediaId: timeline.clips[0].mediaId,
         provider: 'local',
-        kind: 'edit',
+        kind,
         status: 'QUEUED',
         budgetMonth: new Date().toISOString().slice(0, 7),
         estimatedCostCents: 0,
@@ -139,7 +147,8 @@ export async function enqueueEditorJob(
           musicRightsConfirmed: Boolean(
             timeline.musicMediaId && input.musicRightsConfirmed === true,
           ),
-          sourceKind: 'editor',
+          sourceKind: preview ? 'editor-preview' : 'editor',
+          preview,
         }),
       },
     });
@@ -164,10 +173,11 @@ async function finishEditorJob(job: Job) {
   const parameters = jobParameters(job);
   const timeline = parameters.timeline;
   const media = await db.$transaction((tx) => validateMedia(tx, timeline));
-  await checkExportSupport(timeline.codec);
+  const preview = job.kind === 'edit-preview';
+  await checkExportSupport(preview ? 'h264' : timeline.codec);
   await mkdir(join(storageRoot(), 'media'), { recursive: true, mode: 0o700 });
   if (!/^[A-Za-z0-9_-]+$/.test(job.id)) throw new EditorError('INVALID_JOB_ID');
-  const videoRelative = `media/${job.id}-edit.mp4`;
+  const videoRelative = `media/${job.id}-${preview ? 'preview' : 'edit'}.mp4`;
   const coverRelative = `media/${job.id}-cover.jpg`;
   const outputPath = resolveMediaPath(videoRelative);
   const coverPath = resolveMediaPath(coverRelative);
@@ -194,6 +204,7 @@ async function finishEditorJob(job: Job) {
       : {}),
     outputPath,
     coverPath,
+    preview,
   });
   try {
     await db.$transaction(async (tx) => {
@@ -202,14 +213,14 @@ async function finishEditorJob(job: Job) {
         throw new EditorError('JOB_STATE_CHANGED', 409);
       const output = await tx.media.create({
         data: {
-          name: `montage-${job.id}.mp4`,
+          name: `${preview ? 'apercu' : 'montage'}-${job.id}.mp4`,
           path: videoRelative,
           mimeType: 'video/mp4',
           size: result.bytes,
           width: result.width,
           height: result.height,
           duration: result.durationSeconds,
-          role: 'EXPORT',
+          role: preview ? 'PREVIEW' : 'EXPORT',
           projectId: job.projectId,
         },
       });
@@ -221,7 +232,7 @@ async function finishEditorJob(job: Job) {
           size: result.coverBytes,
           width: result.width,
           height: result.height,
-          role: 'COVER',
+          role: preview ? 'PREVIEW_COVER' : 'COVER',
           projectId: job.projectId,
         },
       });
@@ -236,7 +247,8 @@ async function finishEditorJob(job: Job) {
           errorCode: null,
           parameters: JSON.stringify({
             ...parameters,
-            sourceKind: 'editor',
+            sourceKind: preview ? 'editor-preview' : 'editor',
+            preview,
             durationSeconds: result.durationSeconds,
             exportWidth: result.width,
             exportHeight: result.height,
@@ -266,20 +278,29 @@ export async function processEditJobs() {
   try {
     if (!recovered) {
       await db.job.updateMany({
-        where: { kind: 'edit', status: 'PROCESSING', providerRequested: false },
+        where: {
+          kind: { in: ['edit', 'edit-preview'] },
+          provider: 'local',
+          status: 'PROCESSING',
+          providerRequested: false,
+        },
         data: { status: 'QUEUED', progress: 0 },
       });
       recovered = true;
     }
     const job = await db.job.findFirst({
-      where: { kind: 'edit', status: 'QUEUED', provider: 'local' },
+      where: {
+        kind: { in: ['edit', 'edit-preview'] },
+        status: 'QUEUED',
+        provider: 'local',
+      },
       orderBy: { createdAt: 'asc' },
     });
     if (!job) return;
     const claimed = await db.job.updateMany({
       where: {
         id: job.id,
-        kind: 'edit',
+        kind: job.kind,
         status: 'QUEUED',
         providerRequested: false,
       },

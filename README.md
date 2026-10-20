@@ -79,6 +79,7 @@ Les tests HTTP nécessitent le build et démarrent leur propre instance avec une
 - [Montage vidéo et Pinterest](docs/PHASE_4.md)
 - [Replicate, Ollama et état des fournisseurs](docs/PHASE_5.md)
 - [Fonctionnalités et limites](docs/FONCTIONNALITES.md)
+- [Compléments et aperçus avant export](docs/COMPLEMENTS.md)
 - [Sauvegarde Git et synchronisation GitHub](docs/GIT_SYNCHRONISATION.md)
 - [Licences des composants](LICENSES.md)
 
