@@ -298,6 +298,8 @@ async function main() {
       logoOpacity: 1,
       logoPosition: 'top-left',
       logoFade: false,
+      logoTiming: 'all',
+      quality: 21,
     };
     assert.deepEqual(
       (await json('/api/editor/' + project.id, { timeline }, 'PUT')).timeline,

@@ -60,6 +60,9 @@ import {
 import { FashionStudio } from './fashion-studio';
 import { EditorStudio } from './editor-studio';
 import { SEOStudio } from './seo-studio';
+import { ProvidersPanel } from './providers-panel';
+import { BrandPresetsPanel } from './brand-presets-panel';
+import { ImageExportPanel } from './image-export-panel';
 import fr from '@/messages/fr';
 import en from '@/messages/en';
 type Locale = 'fr' | 'en';
@@ -113,10 +116,12 @@ type Settings = {
   defaultProvider: string;
   monthlyBudgetCents: number;
   providerEnabled: boolean;
+  replicateEnabled: boolean;
   usdToEur: number;
   logoSize: number;
   logoOpacity: number;
   logoPosition: string;
+  logoFade: boolean;
 };
 type Snapshot = {
   needsSetup: boolean;
@@ -156,6 +161,7 @@ type Parameters = {
   logoSize: number;
   logoOpacity: number;
   logoAnimation: string;
+  logoTiming: string;
   stylePreferences: Record<string, string>;
 };
 const STYLE_OPTIONS = [
@@ -195,10 +201,12 @@ const defaults: Settings = {
   defaultProvider: 'local',
   monthlyBudgetCents: 0,
   providerEnabled: false,
+  replicateEnabled: false,
   usdToEur: 1,
   logoSize: 15,
   logoOpacity: 0.8,
   logoPosition: 'bottom-right',
+  logoFade: false,
 };
 const baseParameters = (s: Settings): Parameters => ({
   sourceMediaId: '',
@@ -216,9 +224,27 @@ const baseParameters = (s: Settings): Parameters => ({
   logoPosition: s.logoPosition,
   logoSize: s.logoSize,
   logoOpacity: s.logoOpacity,
-  logoAnimation: 'none',
+  logoAnimation: s.logoFade ? 'fade' : 'none',
+  logoTiming: 'all',
   stylePreferences: {},
 });
+const compressionQuality = (quality: string) =>
+  quality === 'high' ? 18 : quality === 'compressed' ? 28 : 21;
+function estimatedMegabytes(parameters: Parameters) {
+  const [rw, rh] = parameters.format.split(':').map(Number);
+  const scale = parameters.resolution / Math.min(rw, rh);
+  return (
+    (rw *
+      rh *
+      scale *
+      scale *
+      parameters.duration *
+      (parameters.codec === 'h265' ? 0.055 : 0.08) *
+      2 ** ((21 - compressionQuality(parameters.quality)) / 6)) /
+    1024 /
+    1024
+  );
+}
 class ApiError extends Error {
   code: string;
   constructor(code: string) {
@@ -350,6 +376,8 @@ function StudioApp({
           ? error
           : 'UNKNOWN';
     if (code === 'NETWORK') return t('errorNetwork');
+    if (/UNSAFE_SVG_LOGO|SVG_LOGO_TOO_LARGE|SVG_LOGO_ONLY/.test(code))
+      return t('errorSvg');
     if (/UNAUTH|SESSION|AUTH_REQUIRED/.test(code))
       return t('errorUnauthorized');
     if (code === 'PASSWORD_MISMATCH') return t('passwordMismatch');
@@ -415,8 +443,12 @@ function StudioApp({
     );
     const data = await api('/api/settings', 'PATCH', allowed);
     setSettings(cleanSettings(data.settings));
-    await reload();
     if (patch.locale) changeLocale(patch.locale);
+    try {
+      await reload();
+    } catch {
+      notify(t('savedRefreshFailed'));
+    }
   }
   function navigate(value: string) {
     setPage(value);
@@ -504,11 +536,13 @@ function StudioApp({
       format: parameters.format,
       resolution: parameters.resolution,
       codec: parameters.codec,
+      quality: compressionQuality(parameters.quality),
       logoId: parameters.logoMediaId || null,
       logoSize: parameters.logoSize,
       logoOpacity: parameters.logoOpacity,
       logoPosition: parameters.logoPosition,
       logoFade: parameters.logoAnimation === 'fade',
+      logoTiming: parameters.logoTiming,
       confirmedPaid: parameters.provider === 'runway',
       expectedCostCents: estimated,
     };
@@ -614,9 +648,11 @@ function StudioApp({
         aria-label={t('upload')}
         type="file"
         accept={
-          page === 'library' && fileRole === 'SOURCE'
-            ? '.png,.jpg,.jpeg,.webp,.mp4,.mp3,.wav,.m4a'
-            : '.png,.jpg,.jpeg,.webp'
+          fileRole === 'LOGO'
+            ? '.png,.jpg,.jpeg,.webp,.svg'
+            : page === 'library' && fileRole === 'SOURCE'
+              ? '.png,.jpg,.jpeg,.webp,.mp4,.mp3,.wav,.m4a'
+              : '.png,.jpg,.jpeg,.webp'
         }
         multiple={page === 'library'}
         onChange={(e) => {
@@ -1503,13 +1539,25 @@ function StudioApp({
                           <option value="h265">H.265</option>
                         </Select>
                       </Field>
+                      <Field label={t('compression')}>
+                        <Select
+                          value={parameters.quality}
+                          onChange={(e) => setParam('quality', e.target.value)}
+                        >
+                          <option value="high">{t('compressionHigh')}</option>
+                          <option value="balanced">
+                            {t('compressionBalanced')}
+                          </option>
+                          <option value="compressed">
+                            {t('compressionSmall')}
+                          </option>
+                        </Select>
+                      </Field>
                       <p className="field-hint">
                         {t('estimatedSize')} : ~
-                        {Math.round(
-                          (parameters.resolution / 720) * parameters.duration,
-                        )}{' '}
-                        MB
+                        {estimatedMegabytes(parameters).toFixed(1)} MB
                       </p>
+                      <p className="field-hint">{t('compressionNote')}</p>
                     </details>
                     <details className="advanced-settings">
                       <summary>
@@ -1594,6 +1642,18 @@ function StudioApp({
                             >
                               <option value="none">{t('none')}</option>
                               <option value="fade">{t('fade')}</option>
+                            </Select>
+                          </Field>
+                          <Field label={t('logoTiming')}>
+                            <Select
+                              value={parameters.logoTiming || 'all'}
+                              onChange={(e) =>
+                                setParam('logoTiming', e.target.value)
+                              }
+                            >
+                              <option value="all">{t('logoAll')}</option>
+                              <option value="start">{t('logoStart')}</option>
+                              <option value="end">{t('logoEnd')}</option>
                             </Select>
                           </Field>
                         </>
@@ -1823,6 +1883,12 @@ function StudioApp({
                   </button>
                 </div>
               )}
+              <ImageExportPanel
+                locale={locale}
+                media={media}
+                projects={projects}
+                onRefresh={reload}
+              />
             </>
           )}
           {page === 'settings' && (
@@ -2145,6 +2211,15 @@ function StudioApp({
                   </p>
                   <p className="field-hint">{t('budgetNote')}</p>
                 </SettingsPanel>
+                <ProvidersPanel
+                  locale={locale}
+                  projects={projects}
+                  media={media}
+                  jobs={jobs}
+                  settings={settings}
+                  onUpdateSettings={updateSettings}
+                  onRefresh={reload}
+                />
                 <SettingsPanel
                   icon={<Palette size={18} />}
                   title={t('brandKit')}
@@ -2279,12 +2354,27 @@ function StudioApp({
                   </div>
                   <p className="field-hint">{t('securityNote')}</p>
                 </SettingsPanel>
+                <BrandPresetsPanel
+                  locale={locale}
+                  logos={logos}
+                  onApply={async (preset) => {
+                    await updateSettings({
+                      activeLogoId: preset.logoMediaId,
+                      logoSize: preset.logoSize,
+                      logoOpacity: preset.logoOpacity,
+                      logoPosition: preset.logoPosition,
+                      logoFade: preset.logoFade,
+                    });
+                  }}
+                />
               </div>
             </div>
           )}
           {(page === 'fashion' || page === 'lookbook') && (
             <FashionStudio
               locale={locale}
+              defaultStyles={settings.preferredStyles}
+              defaultHijab={settings.hijab}
               view={page}
               initialProjectId={selectedId}
               projects={projects}

@@ -11,9 +11,11 @@ import { dirname, extname, isAbsolute, join } from 'node:path';
 import {
   checkExportSupport,
   getExportDimensions,
+  getLogoTimingWindow,
   probeMedia,
   type ExportLogo,
   type LogoPosition,
+  type LogoTiming,
   type VideoCodec,
   type VideoFormat,
   type VideoResolution,
@@ -43,11 +45,13 @@ export interface EditorTimeline {
   format: VideoFormat;
   resolution: VideoResolution;
   codec: VideoCodec;
+  quality: number;
   logoId: string | null;
   logoSize: number;
   logoOpacity: number;
   logoPosition: LogoPosition;
   logoFade: boolean;
+  logoTiming: LogoTiming;
 }
 export class EditorError extends Error {
   constructor(
@@ -69,11 +73,13 @@ export function defaultEditorTimeline(): EditorTimeline {
     format: '9:16',
     resolution: 1080,
     codec: 'h264',
+    quality: 21,
     logoId: null,
     logoSize: 15,
     logoOpacity: 0.8,
     logoPosition: 'bottom-right',
     logoFade: false,
+    logoTiming: 'all',
   };
 }
 function object(value: unknown): Record<string, unknown> {
@@ -171,6 +177,14 @@ export function parseEditorTimeline(value: unknown): EditorTimeline {
   const codec = input.codec ?? defaults.codec;
   if (!['h264', 'h265'].includes(codec as string))
     throw new EditorError('INVALID_CODEC');
+  const quality = input.quality ?? defaults.quality;
+  if (
+    typeof quality !== 'number' ||
+    !Number.isInteger(quality) ||
+    quality < 18 ||
+    quality > 32
+  )
+    throw new EditorError('INVALID_QUALITY');
   const logoPosition = input.logoPosition ?? defaults.logoPosition;
   if (
     ![
@@ -184,6 +198,9 @@ export function parseEditorTimeline(value: unknown): EditorTimeline {
     throw new EditorError('INVALID_LOGO_SETTINGS');
   if ('logoFade' in input && typeof input.logoFade !== 'boolean')
     throw new EditorError('INVALID_LOGO_SETTINGS');
+  const logoTiming = input.logoTiming ?? defaults.logoTiming;
+  if (!['all', 'start', 'end'].includes(logoTiming as string))
+    throw new EditorError('INVALID_LOGO_SETTINGS');
   return {
     version: 1,
     clips,
@@ -195,11 +212,13 @@ export function parseEditorTimeline(value: unknown): EditorTimeline {
     format: format as VideoFormat,
     resolution: resolution as VideoResolution,
     codec: codec as VideoCodec,
+    quality,
     logoId: input.logoId == null ? null : identifier(input.logoId),
     logoSize: number(input.logoSize ?? defaults.logoSize, 3, 50),
     logoOpacity: number(input.logoOpacity ?? defaults.logoOpacity, 0, 1),
     logoPosition: logoPosition as LogoPosition,
     logoFade: input.logoFade === true,
+    logoTiming: logoTiming as LogoTiming,
   };
 }
 
@@ -501,11 +520,12 @@ export async function renderEditorTimeline(options: RenderEditorOptions) {
         'bottom-right': 'W-w-24:H-h-24',
         center: '(W-w)/2:(H-h)/2',
       };
+      const timing = getLogoTimingWindow(duration, timeline.logoTiming, 0.35);
       filters.push(
-        `[${inputIndex}:v]scale=${Math.round((width * timeline.logoSize) / 100 / 2) * 2}:-2,format=rgba,colorchannelmixer=aa=${timeline.logoOpacity}${timeline.logoFade ? `,fade=t=in:st=0:d=0.35:alpha=1,fade=t=out:st=${Math.max(0.35, duration - 0.35)}:d=0.35:alpha=1` : ''}[editor-logo]`,
+        `[${inputIndex}:v]scale=${Math.round((width * timeline.logoSize) / 100 / 2) * 2}:-2,format=rgba,colorchannelmixer=aa=${timeline.logoOpacity}${timeline.logoFade ? `,fade=t=in:st=${timing.start}:d=${timing.fadeSeconds}:alpha=1,fade=t=out:st=${timing.end - timing.fadeSeconds}:d=${timing.fadeSeconds}:alpha=1` : ''}[editor-logo]`,
       );
       filters.push(
-        `[${video}][editor-logo]overlay=${positions[timeline.logoPosition]}:shortest=1[branded]`,
+        `[${video}][editor-logo]overlay=${positions[timeline.logoPosition]}:shortest=1:enable='between(t,${timing.start},${timing.end})'[branded]`,
       );
       video = 'branded';
     }
@@ -546,7 +566,7 @@ export async function renderEditorTimeline(options: RenderEditorOptions) {
       '-preset',
       'veryfast',
       '-crf',
-      '21',
+      String(timeline.quality),
       '-pix_fmt',
       'yuv420p',
       '-c:a',

@@ -136,6 +136,8 @@ type ModelForm = {
 };
 type Props = {
   locale: 'fr' | 'en';
+  defaultStyles?: string[];
+  defaultHijab?: boolean;
   view: 'fashion' | 'lookbook';
   projects: FashionProject[];
   media: FashionMedia[];
@@ -222,6 +224,8 @@ const listFromText = (text: string) => [
 ];
 export function FashionStudio({
   locale,
+  defaultStyles = [],
+  defaultHijab = false,
   view,
   projects,
   media,
@@ -265,12 +269,17 @@ export function FashionStudio({
   const [garmentIds, setGarmentIds] = useState<string[]>([]);
   const [parameters, setParameters] = useState<LookParameters>({
     ...DEFAULT_LOOK,
+    styles: [...defaultStyles],
   });
   const [colorsText, setColorsText] = useState('');
   const [accessoriesText, setAccessoriesText] = useState('');
   const [customStyle, setCustomStyle] = useState('');
   const [mode, setMode] = useState<RenderMode>('collage');
-  const [modelForm, setModelForm] = useState<ModelForm>(emptyModel);
+  const [modelForm, setModelForm] = useState<ModelForm>(() => {
+    const model = emptyModel();
+    model.parameters.hijab = defaultHijab;
+    return model;
+  });
   const [pickerIds, setPickerIds] = useState<string[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [uploadTarget, setUploadTarget] = useState<'garments' | 'portrait'>(
@@ -498,7 +507,7 @@ export function FashionStudio({
     setName('');
     setMannequinId('');
     setGarmentIds([]);
-    setParameters({ ...DEFAULT_LOOK });
+    setParameters({ ...DEFAULT_LOOK, styles: [...defaultStyles] });
     setColorsText('');
     setAccessoriesText('');
     setMode('collage');
@@ -542,7 +551,10 @@ export function FashionStudio({
             referenceMediaId: model.referenceMediaId,
             parameters: { ...model.parameters },
           }
-        : emptyModel(),
+        : {
+            ...emptyModel(),
+            parameters: { ...emptyModel().parameters, hijab: defaultHijab },
+          },
     );
     setDialog('model');
   }

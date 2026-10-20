@@ -244,7 +244,7 @@ describe('media validation', () => {
       uploadMedia(multipart('product.png', 'image/png', invalidPng)),
     ).rejects.toMatchObject({ code: 'INVALID_IMAGE' });
   });
-  it('rejects SVG logos explicitly', async () => {
+  it('rejects executable SVG logos explicitly', async () => {
     await expect(
       uploadMedia(
         multipart(
@@ -254,7 +254,25 @@ describe('media validation', () => {
           'LOGO',
         ),
       ),
-    ).rejects.toMatchObject({ code: 'SVG_UNSUPPORTED' });
+    ).rejects.toMatchObject({ code: 'UNSAFE_SVG_LOGO' });
+  });
+  it('rasterizes a basic SVG logo and keeps SVG out of the source library', async () => {
+    const bytes = Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8"><rect width="6" height="8" fill="#722f37"/></svg>',
+    );
+    const result = await uploadMedia(
+      multipart('logo.svg', 'image/svg+xml', bytes, 'LOGO'),
+    );
+    expect(result).toMatchObject({
+      mimeType: 'image/png',
+      name: 'logo.png',
+      width: 12,
+      height: 8,
+      role: 'LOGO',
+    });
+    await expect(
+      uploadMedia(multipart('product.svg', 'image/svg+xml', bytes)),
+    ).rejects.toMatchObject({ code: 'SVG_LOGO_ONLY' });
   });
   it('decodes a genuine transparent logo without exposing its server path', async () => {
     const bytes = await sharp({

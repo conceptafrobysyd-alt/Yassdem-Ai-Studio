@@ -1,4 +1,18 @@
 const fr = {
+  compression: 'Qualité et compression',
+  compressionHigh: 'Qualité élevée · CRF 18',
+  compressionBalanced: 'Équilibré · CRF 21',
+  compressionSmall: 'Fichier plus léger · CRF 28',
+  compressionNote:
+    'Taille indicative : elle dépend des mouvements et du contenu. La compression locale ne coûte aucun crédit IA.',
+  errorSvg:
+    'Ce SVG doit être un logo vectoriel simple, sans script, style CSS ni ressource externe (512 Ko maximum). Vous pouvez aussi utiliser un PNG.',
+  savedRefreshFailed:
+    'Enregistré. La vue n’a pas pu être actualisée ; rechargez-la si nécessaire.',
+  logoTiming: 'Présence du logo',
+  logoAll: 'Toute la vidéo',
+  logoStart: 'Au début (2 secondes maximum)',
+  logoEnd: 'À la fin (2 secondes maximum)',
   editorDescription:
     'Assemblez vos clips, ajoutez des sous-titres et exportez votre vidéo.',
   seoDescription:
@@ -176,7 +190,6 @@ const fr = {
   introLogo: 'Au début',
   outroLogo: 'À la fin',
   entireLogo: 'Toute la vidéo',
-  logoTiming: 'Placement temporel',
   estimate: 'Coût estimé',
   estimateButton: 'Calculer le coût',
   generating: 'Création en cours',
@@ -246,7 +259,8 @@ const fr = {
   brandKit: 'Brand Kit',
   brandKitDescription: 'Vos signatures visuelles, pour toutes vos créations.',
   addLogo: 'Ajouter un logo',
-  logosHelp: 'PNG, JPG, WebP · transparence préservée. SVG non pris en charge.',
+  logosHelp:
+    'PNG, JPG, WebP ou SVG simple (512 Ko), vérifié puis converti en PNG. Transparence préservée.',
   activeLogo: 'Logo par défaut',
   noLogos: 'Ajoutez votre premier logo.',
   providersBudget: 'Fournisseurs & budget',

@@ -1,4 +1,17 @@
 const en = {
+  compression: 'Quality and compression',
+  compressionHigh: 'High quality · CRF 18',
+  compressionBalanced: 'Balanced · CRF 21',
+  compressionSmall: 'Smaller file · CRF 28',
+  compressionNote:
+    'Estimated size depends on motion and content. Local compression uses no AI credits.',
+  errorSvg:
+    'Use a simple vector SVG logo without scripts, CSS or external resources (512 KB maximum), or upload a PNG.',
+  savedRefreshFailed: 'Saved. The view could not refresh; reload it if needed.',
+  logoTiming: 'Logo visibility',
+  logoAll: 'Entire video',
+  logoStart: 'At the start (up to 2 seconds)',
+  logoEnd: 'At the end (up to 2 seconds)',
   editorDescription: 'Arrange clips, add captions and export your video.',
   seoDescription:
     'Prepare and refine your Pinterest copy in French and English.',
@@ -171,7 +184,6 @@ const en = {
   introLogo: 'At the beginning',
   outroLogo: 'At the end',
   entireLogo: 'Entire video',
-  logoTiming: 'Logo timing',
   estimate: 'Estimated cost',
   estimateButton: 'Calculate cost',
   generating: 'Creating your video',
@@ -240,7 +252,8 @@ const en = {
   brandKit: 'Brand Kit',
   brandKitDescription: 'Your visual signature, for every creation.',
   addLogo: 'Upload a logo',
-  logosHelp: 'PNG, JPG, WebP · transparency preserved. SVG not supported.',
+  logosHelp:
+    'PNG, JPG, WebP or simple SVG (512 KB), validated and converted to PNG. Transparency preserved.',
   activeLogo: 'Default logo',
   noLogos: 'Add your first logo.',
   providersBudget: 'Providers & budget',

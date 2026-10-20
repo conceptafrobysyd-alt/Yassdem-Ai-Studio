@@ -12,6 +12,43 @@ Résultats constatés les **19 et 20 octobre 2026** dans l'environnement Linux c
 | Prisma                  | 6.19.0, moteur JavaScript et adaptateur SQLite officiel |
 | better-sqlite3 / SQLite | 12.11.1 / 3.53.2                                        |
 
+## Phase 5 — Fournisseurs et finitions
+
+| Contrôle                                   | Résultat                                                                                                                                                                                   |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Suite complète                             | 154 tests réussis dans 10 fichiers après intégration des phases 1 à 5                                                                                                                      |
+| Installation figée après ajout de Saxes    | `npm ci` réussi avec génération automatique du client Prisma                                                                                                                               |
+| Migrations SQLite                          | Quatre migrations appliquées ; `db:deploy` répété deux fois sans migration restante                                                                                                        |
+| Vérification TypeScript                    | `npm run typecheck` réussi après intégration                                                                                                                                               |
+| Build final de production                  | `npm run build` réussi après les réglages de compression et les corrections finales                                                                                                       |
+| Audit des dépendances de production        | `npm audit --omit=dev` : aucune vulnérabilité signalée                                                                                                                                     |
+| Export d’image                             | 7 tests réussis avec Sharp et SQLite : vrai PNG 3840 × 2160, transparence et opacité du logo, JPEG sur fond blanc, orientation EXIF, références ZIP/duplication et nettoyage après échec   |
+| Identités de marque                        | 1 test pilotant 5 groupes SQLite : identités persistantes, validation, références de logo, préférences appliquées et conservation des projets                                              |
+| SVG et import                              | 43 tests backend + SVG réussis (13 backend et 30 SVG) ; formes réellement rasterisées en PNG, limites de complexité et contenus interdits vérifiés                                         |
+| Logo vidéo au début/à la fin               | 10 tests montage + 16 Runway réussis ; contrôles de pixels réels dans les deux moteurs, fondu et fenêtre ajustée à la durée réelle du média                                                |
+| Compression vidéo réelle                   | Test FFmpeg sur une source détaillée : CRF 28 produit un fichier au moins 15 % plus petit que CRF 18 dans le studio produit et le montage ; validation et persistance du réglage vérifiées |
+| Sélection des fournisseurs supplémentaires | 21 tests réussis avec `tests/additional-providers.test.ts`                                                                                                                                 |
+| Registre et Ollama                         | Métadonnées sans secret et absence d'appel lors de la simple lecture ; contrat JSON, modèle installé et limites réseau vérifiés avec réponses simulées                                     |
+| Persistance et budget Replicate            | Sous-processus Node.js avec vraie base SQLite, pilotant 13 groupes de scénarios financiers et de reprise                                                                                   |
+| Import de médias                           | Vrais PNG et MP4 validés ; fichiers vides, corrompus et vidéo de plus de 30 minutes refusés ; téléchargement réseau simulé                                                                 |
+| Navigateur fournisseurs                    | Cinq fournisseurs affichés, budget nul et génération Replicate bloquée ; aucun POST payant observé                                                                                         |
+| Navigateur identités et images             | Identité créée, appliquée et conservée ; SVG converti en PNG puis vrai export 3840 × 2400 avec pixels rouges du logo vérifiés                                                              |
+| Préférences et langues                     | Résultat conservé au changement FR/EN ; réglages de logo début/fin enregistrés ; nouveau profil reprenant hijab et styles indépendants                                                     |
+| Affichage mobile                           | Paramètres et bibliothèque à 390 pixels sans débordement ni erreur du navigateur observée                                                                                                  |
+| Régression HTTP produit et Fashion         | 9 contrôles produit et 3 groupes Fashion réussis après intégration des fonctionnalités de phase 5                                                                                          |
+| Régression HTTP montage et Pinterest       | 3 groupes réussis après les nouveaux réglages : vrai MP4 H.264/AAC, musique audible, logo, couverture et exports SEO                                                                          |
+| Navigateur compression                     | Choix CRF 18/21/28, tâche produit CRF 28 produisant un vrai MP4 de cinq secondes, réglage de montage CRF 18 persistant ; prix Replicate non configuré affiché sans montant inventé               |
+| Génération Replicate réelle                | Non exécutée ; aucun appel payant                                                                                                                                                          |
+| Inférences Ollama et ComfyUI réelles       | Non exécutées ; services et poids non installés                                                                                                                                            |
+
+Les scénarios financiers vérifient le budget nul, l'activation, la confirmation du montant et de la version immuable du modèle, le refus d’un modèle changé au même prix, le registre partagé avec Runway, l'idempotence et l'annulation avant envoi, la nouvelle vérification du budget par le worker, la conservation d'un envoi ambigu sans second POST, l'annulation après soumission avec réservation conservée, le refus d'inventer un coût à partir du temps de calcul, le refus d'une configuration changée, l'isolement des autres familles de tâches et l'enregistrement d'un vrai résultat sans supprimer sa réservation. Les treize groupes sont contenus dans un test Vitest et ne s'ajoutent pas au total de 21.
+
+```bash
+npx vitest run tests/additional-providers.test.ts
+```
+
+Les totaux ciblés se recouvrent avec la suite complète et ne doivent pas être additionnés. Les groupes SQLite pilotés au sein d’un test ne sont pas comptés comme des tests Vitest supplémentaires. Ces résultats ne valident ni la facturation réelle du compte, ni les modèles auxquels il a accès, ni une inférence distante ou locale réelle.
+
 ## Phase 4 — Montage et Pinterest
 
 Contrôles exécutés le 20 octobre 2026 :

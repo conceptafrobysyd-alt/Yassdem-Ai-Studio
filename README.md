@@ -1,8 +1,8 @@
 # Yassdem AI Studio
 
-Studio personnel de création de vidéos produits et de collections fashion. Les phases 1 à 4 apportent les projets, la médiathèque, les paramètres, l'animation locale d'une photo, l'adaptateur Runway, les exports MP4, les profils de mannequins, la composition de looks, le montage de plusieurs clips et la préparation des textes Pinterest. L'interface propose le français et l'anglais.
+Studio personnel de création de vidéos produits et de collections fashion. Les phases 1 à 5 apportent les projets, la médiathèque, les paramètres, l'animation locale d'une photo, l'adaptateur Runway, les exports MP4, les profils de mannequins, la composition de looks, le montage de plusieurs clips, la préparation des textes Pinterest et les adaptateurs fournisseurs supplémentaires. L'interface propose le français et l'anglais.
 
-Le parcours local produit de vrais fichiers : vidéo par zoom FFmpeg d'une image fixe et planche de vêtements par assemblage Sharp. Le montage assemble aussi de vrais clips avec coupes, fondus, textes, logo et musique. Ces modes sont sans IA ; la rédaction Pinterest locale utilise des modèles de texte. Les intégrations Runway et ComfyUI sont implémentées ; aucune génération Runway, image éditoriale IA ou véritable inférence d'essayage virtuel n'a été validée avec un fournisseur réel pour cette livraison.
+Le parcours local produit de vrais fichiers : vidéo par zoom FFmpeg d'une image fixe et planche de vêtements par assemblage Sharp. Le montage assemble aussi de vrais clips avec coupes, fondus, textes, logo et musique. Ces modes sont sans IA ; la rédaction Pinterest locale utilise des modèles de texte. Les intégrations Runway, Replicate, ComfyUI et Ollama sont implémentées ; aucune génération payante ni inférence avec un modèle externe ou un service IA local réel n'a été validée pour cette livraison.
 
 ## Installation rapide
 
@@ -39,11 +39,13 @@ Gardez le terminal actif : le worker traite les tâches persistées en base. `Ct
 3. Choisissez l'animation locale pour produire une vraie vidéo sans frais d'API. Le fournisseur Runway se configure séparément dans les paramètres.
 4. Consultez la tâche, prévisualisez le MP4 terminé puis téléchargez-le. Un logo de la médiathèque peut servir de filigrane.
 
-Le budget mensuel est de **0 €** par défaut et Runway est désactivé. Le parcours local ne déclenche aucun appel payant.
+Le budget mensuel partagé est de **0 €** par défaut ; Runway et Replicate sont désactivés. Le parcours local ne déclenche aucun appel payant.
 
 Pour une collection fashion, choisissez Fashion Studio ou Lookbook Creator, importez de 1 à 8 vêtements, enregistrez un profil de mannequin facultatif puis composez un look. Le mode **Planche de collection** crée un PNG de vos photos originales, sans les faire porter au mannequin. Vous pouvez créer des variantes, comparer les originaux et le résultat, télécharger la planche puis l'ouvrir dans le studio vidéo. Le [guide de phase 3](docs/PHASE_3.md) détaille ce parcours et les workflows IA optionnels.
 
 Pour monter plusieurs vidéos, ouvrez Montage vidéo, ajoutez des clips puis choisissez les coupes, les textes et une musique autorisée. L'export produit un MP4 et une couverture JPEG. L'atelier Pinterest prépare des textes FR/EN modifiables et des fichiers JSON/CSV ; il ne publie rien automatiquement. Le [guide de phase 4](docs/PHASE_4.md) décrit ces parcours.
+
+La bibliothèque propose aussi l’export PNG/JPEG/WebP aux dimensions natives ou en 4K sur le côté long de 3840 pixels, avec un logo facultatif. Les paramètres conservent plusieurs identités de marque réutilisables. Un SVG simple importé comme logo est contrôlé puis converti en PNG. Le [guide de phase 5](docs/PHASE_5.md) précise les limites et la différence entre agrandissement et génération native.
 
 ## Données et configuration
 
@@ -52,6 +54,8 @@ Le fichier `.env.example` décrit les variables prises en charge. `DATABASE_URL=
 `RUNWAY_API_KEY` reste exclusivement sur le serveur. Elle est facultative pour le fonctionnement local. Ne la placez jamais dans une variable `NEXT_PUBLIC_*`, un prompt, une capture d'écran ou un commit. `FFMPEG_PATH` et `FFPROBE_PATH` permettent de préciser les exécutables si nécessaire. Le [guide Runway](docs/RUNWAY.md) détaille la connexion, les coûts et les limites.
 
 ComfyUI est facultatif. Les modes Fashion IA demandent un service séparé, ses modèles et des graphes API adaptés, configurés avec `COMFYUI_URL`, `COMFYUI_FASHION_WORKFLOW` et `COMFYUI_TRYON_WORKFLOW`. Aucun GPU ni poids de modèle n'est installé automatiquement. Le guide de phase 3 décrit le contrat des fichiers JSON et distingue la validité de leur configuration d'une inférence réellement réussie.
+
+Replicate est facultatif et demande un modèle compatible, une version immuable et une hypothèse manuelle de réservation en euros, en plus de sa clé serveur. Son coût réel n'est pas déduit du temps de calcul. Ollama est facultatif et demande un service en boucle locale avec un modèle déjà installé ; le studio ne télécharge aucun modèle. Le [guide de phase 5](docs/PHASE_5.md) décrit les configurations et les contrôles de budget.
 
 Cette version est destinée à un usage personnel sur une machine de confiance. Un déploiement distant demande un volume persistant pour la base et les médias, HTTPS, un contrôle des accès et une sauvegarde externe. Il ne faut pas utiliser un hébergement de fonctions éphémères pour le worker et les fichiers locaux.
 
@@ -73,7 +77,9 @@ Les tests HTTP nécessitent le build et démarrent leur propre instance avec une
 - [Configuration Runway et budget](docs/RUNWAY.md)
 - [Fashion, lookbooks et configuration ComfyUI](docs/PHASE_3.md)
 - [Montage vidéo et Pinterest](docs/PHASE_4.md)
+- [Replicate, Ollama et état des fournisseurs](docs/PHASE_5.md)
 - [Fonctionnalités et limites](docs/FONCTIONNALITES.md)
+- [Sauvegarde Git et synchronisation GitHub](docs/GIT_SYNCHRONISATION.md)
 - [Licences des composants](LICENSES.md)
 
-La phase 5, consacrée aux fournisseurs IA supplémentaires, reste à valider et livrer séparément. Les modes Fashion IA restent conditionnés à une installation ComfyUI compatible et à sa validation réelle. Consultez l'inventaire avant de considérer un élément du cahier des charges comme livré.
+Les modes IA restent conditionnés à une configuration compatible et à leur validation réelle avec vos services ou comptes fournisseurs. Consultez l'inventaire avant de considérer un élément du cahier des charges comme livré.

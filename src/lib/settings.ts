@@ -39,10 +39,12 @@ export async function updateSettings(input: Record<string, unknown>) {
     'defaultProvider',
     'monthlyBudgetCents',
     'providerEnabled',
+    'replicateEnabled',
     'usdToEur',
     'logoSize',
     'logoOpacity',
     'logoPosition',
+    'logoFade',
   ]);
   const data: Record<string, string | number | boolean | null> = {};
   const choices: Record<string, readonly (string | number)[]> = {
@@ -88,7 +90,12 @@ export async function updateSettings(input: Record<string, unknown>) {
       data[key] = JSON.stringify([
         ...new Set(value.map((item) => (item as string).trim())),
       ]);
-    } else if (key === 'hijab' || key === 'providerEnabled') {
+    } else if (
+      key === 'hijab' ||
+      key === 'providerEnabled' ||
+      key === 'replicateEnabled' ||
+      key === 'logoFade'
+    ) {
       if (typeof value !== 'boolean')
         throw new ApiError(400, 'INVALID_SETTINGS');
       data[key] = value;

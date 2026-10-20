@@ -8,9 +8,9 @@ Prisma utilise le moteur JavaScript (`engineType = "client"`) et l'adaptateur of
 
 Le worker Node.js traite la file de tâches. Les scripts `dev` et `start` lancent le web et le worker ensemble avec `concurrently`. Pour diagnostiquer chaque processus séparément, utilisez `npm run dev:web` et `npm run worker` dans deux terminaux situés dans le même dossier et avec la même configuration.
 
-FFmpeg et FFprobe sont des exécutables système invoqués sans shell avec des arguments contrôlés. Sharp valide et normalise les images. Les adaptateurs Runway et ComfyUI isolent les contrats fournisseurs des routes et de l'interface. Le montage de plusieurs clips utilise aussi FFmpeg. L'atelier SEO conserve les textes dans les paramètres du projet ; son mode local assemble des modèles éditoriaux sans IA, et son option Ollama demande un service local séparé.
+FFmpeg et FFprobe sont des exécutables système invoqués sans shell avec des arguments contrôlés. Sharp valide et normalise les images et réalise les exports raster, avec cadrage et filigrane facultatif. Un import SVG de logo passe par une analyse XML stricte avec Saxes, une reconstruction des éléments autorisés puis une rasterisation PNG ; le SVG source n’est pas conservé. Les adaptateurs Runway, Replicate et ComfyUI isolent les contrats fournisseurs des routes et de l'interface. Le montage de plusieurs clips utilise aussi FFmpeg. L'atelier SEO conserve les textes dans les paramètres du projet ; son mode local assemble des modèles éditoriaux sans IA, et son option Ollama demande un service local séparé.
 
-Les tâches sont conservées en base. Un envoi payant commencé n'est pas rejoué automatiquement lorsqu'on ignore si le fournisseur l'a reçu. Le traitement des tâches dont l'identifiant externe est connu peut reprendre sans envoi d'une seconde génération. La comptabilisation garde séparés l'estimation, la réservation et un coût réel éventuellement rapproché.
+Les tâches sont conservées en base. Un envoi payant commencé n'est pas rejoué automatiquement lorsqu'on ignore si le fournisseur l'a reçu. Le traitement des tâches dont l'identifiant externe est connu peut reprendre sans envoi d'une seconde génération. La comptabilisation garde séparés l'estimation, la réservation et un coût réel éventuellement rapproché. Runway et Replicate partagent le même plafond mensuel. L'estimation Replicate est un montant manuel en euros, pas un prix garanti : faute de facturation vérifiée, la réservation est conservée et le coût réel reste inconnu.
 
 ```mermaid
 flowchart LR
@@ -22,28 +22,31 @@ flowchart LR
     WORKER --> FFMPEG[FFmpeg / FFprobe]
     WORKER --> RUNWAY[API Runway si activée]
     WORKER --> COMFY[ComfyUI si configuré]
+    WORKER --> REPLICATE[API Replicate si activée]
     API --> OLLAMA[Ollama local si configuré]
 ```
 
 ## Organisation
 
-| Chemin                                    | Rôle                                                                       |
-| ----------------------------------------- | -------------------------------------------------------------------------- |
-| `src/app/`                                | Pages, interface et routes HTTP                                            |
-| `src/lib/`                                | Accès aux données, authentification, validation, médias et tâches          |
-| `src/lib/providers/`                      | Adaptateurs des fournisseurs IA                                            |
-| `src/lib/export.ts`                       | Encodage MP4, géométrie, filigrane et métadonnées d'export                 |
-| `src/lib/editor.ts` et `editor-jobs.ts`   | Séquence, rendu FFmpeg, musique, textes, couverture et tâches persistantes |
-| `src/lib/fashion.ts` et `fashion-jobs.ts` | Profils, looks, planche locale et tâches Fashion                           |
-| `src/lib/seo.ts`                          | Contenus Pinterest, rédaction locale ou Ollama, validation et CSV          |
-| `src/worker.ts`                           | Traitement asynchrone des tâches                                           |
-| `prisma/schema.prisma`                    | Modèles de données                                                         |
-| `prisma/migrations/`                      | Historique de création et d'évolution de la base                           |
-| `tests/`                                  | Vérifications automatisées sans appel payant                               |
+| Chemin                                    | Rôle                                                                                     |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `src/app/`                                | Pages, interface et routes HTTP                                                          |
+| `src/lib/`                                | Accès aux données, authentification, validation, médias et tâches                        |
+| `src/lib/providers/`                      | Adaptateurs des fournisseurs IA                                                          |
+| `src/lib/export.ts`                       | Encodage MP4, géométrie, filigrane et métadonnées d'export                               |
+| `src/lib/editor.ts` et `editor-jobs.ts`   | Séquence, rendu FFmpeg, musique, textes, couverture et tâches persistantes               |
+| `src/lib/fashion.ts` et `fashion-jobs.ts` | Profils, looks, planche locale et tâches Fashion                                         |
+| `src/lib/image-export.ts`                 | Export raster natif/3840 pixels, cadrage, transparence, logo et références de sauvegarde |
+| `src/lib/brand-presets.ts`                | Identités de filigrane persistantes et logo facultatif                                   |
+| `src/lib/seo.ts`                          | Contenus Pinterest, rédaction locale ou Ollama, validation et CSV                        |
+| `src/worker.ts`                           | Traitement asynchrone des tâches                                                         |
+| `prisma/schema.prisma`                    | Modèles de données                                                                       |
+| `prisma/migrations/`                      | Historique de création et d'évolution de la base                                         |
+| `tests/`                                  | Vérifications automatisées sans appel payant                                             |
 
-`Settings` conserve les préférences, le budget et le hash du mot de passe. `Project` regroupe les paramètres d'un projet. `Media` référence un fichier source, une piste audio, un logo ou un résultat image/vidéo. `Job` conserve l'état de la génération, le fournisseur, les paramètres, l'estimation, la réservation de budget et l'identifiant de tâche externe éventuel.
+`Settings` conserve les préférences, le budget et le hash du mot de passe. `Project` regroupe les paramètres d'un projet. `Media` référence un fichier source, une piste audio, un logo ou un résultat image/vidéo. `Job` conserve l'état de la génération ou du rendu local, le fournisseur, les paramètres figés, l'estimation, la réservation de budget et l'identifiant de tâche externe éventuel. Les traitements de chaque famille de tâches sont dispatchés séparément par le même worker exclusif. Le registre privé des fournisseurs expose leurs capacités et peut effectuer des vérifications de connexion en lecture seule.
 
-`Mannequin` conserve un profil réutilisable et `Look` une composition de vêtements liée à un projet. La langue de l'interface et la langue de contenu sont deux paramètres indépendants. Les styles, leurs champs descriptifs par projet et l'option hijab sont des préférences persistées. Le mode local compose une planche ; les modes éditorial et virtual try-on demandent deux workflows ComfyUI séparés et adaptés aux modèles installés.
+`BrandPreset` conserve une identité nommée de filigrane et sa référence facultative à un logo. `Mannequin` conserve un profil réutilisable et `Look` une composition de vêtements liée à un projet. La langue de l'interface et la langue de contenu sont deux paramètres indépendants. Les styles, leurs champs descriptifs par projet et l'option hijab sont des préférences persistées. Le mode local compose une planche ; les modes éditorial et virtual try-on demandent deux workflows ComfyUI séparés et adaptés aux modèles installés.
 
 ## Exports et ressources
 

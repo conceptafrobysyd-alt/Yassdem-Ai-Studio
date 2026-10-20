@@ -13,6 +13,7 @@ import {
 import type {
   ExportLogo,
   LogoPosition,
+  LogoTiming,
   VideoCodec,
   VideoFormat,
   VideoResolution,
@@ -46,11 +47,13 @@ export interface EnqueueInput {
   format: VideoFormat;
   resolution: VideoResolution;
   codec?: VideoCodec;
+  quality?: number;
   logoId?: string | null;
   logoSize?: number;
   logoOpacity?: number;
   logoPosition?: LogoPosition;
   logoFade?: boolean;
+  logoTiming?: LogoTiming;
   confirmedPaid?: boolean;
   expectedCostCents?: number;
   idempotencyKey: string;
@@ -61,11 +64,13 @@ interface Parameters {
   format: VideoFormat;
   resolution: VideoResolution;
   codec: VideoCodec;
+  quality: number;
   logoId: string | null;
   logoSize: number;
   logoOpacity: number;
   logoPosition: LogoPosition;
   logoFade: boolean;
+  logoTiming: LogoTiming;
   expectedCostCents: number;
   usdToEur: number;
   model: string;
@@ -150,6 +155,13 @@ function validateInput(input: EnqueueInput) {
   if (input.codec !== undefined && !['h264', 'h265'].includes(input.codec))
     throw new JobError('INVALID_CODEC');
   if (
+    input.quality !== undefined &&
+    (!Number.isInteger(input.quality) ||
+      input.quality < 18 ||
+      input.quality > 32)
+  )
+    throw new JobError('INVALID_QUALITY');
+  if (
     input.prompt !== undefined &&
     (typeof input.prompt !== 'string' || input.prompt.length > 1000)
   )
@@ -182,6 +194,11 @@ function validateInput(input: EnqueueInput) {
   )
     throw new JobError('INVALID_LOGO_SETTINGS');
   if (input.logoFade !== undefined && typeof input.logoFade !== 'boolean')
+    throw new JobError('INVALID_LOGO_SETTINGS');
+  if (
+    input.logoTiming !== undefined &&
+    !['all', 'start', 'end'].includes(input.logoTiming)
+  )
     throw new JobError('INVALID_LOGO_SETTINGS');
   if (
     input.logoId !== undefined &&
@@ -260,12 +277,14 @@ export async function enqueueJob(input: EnqueueInput) {
       format: input.format,
       resolution: input.resolution,
       codec: input.codec ?? 'h264',
+      quality: input.quality ?? 21,
       logoId: input.logoId ?? null,
       logoSize: input.logoSize ?? settings.logoSize,
       logoOpacity: input.logoOpacity ?? settings.logoOpacity,
       logoPosition:
         input.logoPosition ?? (settings.logoPosition as LogoPosition),
       logoFade: input.logoFade ?? false,
+      logoTiming: input.logoTiming ?? 'all',
       expectedCostCents: cost,
       usdToEur: settings.usdToEur,
       model: input.provider === 'runway' ? RUNWAY_MODEL : 'ffmpeg',
@@ -350,6 +369,7 @@ async function logoFor(
     opacity: parameters.logoOpacity,
     position: parameters.logoPosition,
     fade: parameters.logoFade,
+    timing: parameters.logoTiming ?? 'all',
   };
 }
 
@@ -471,6 +491,7 @@ async function finishExport(job: Job, inputMediaId?: string) {
     format: p.format,
     resolution: p.resolution,
     codec: p.codec,
+    quality: p.quality ?? 21,
     logo: await logoFor(p),
   };
   const result =

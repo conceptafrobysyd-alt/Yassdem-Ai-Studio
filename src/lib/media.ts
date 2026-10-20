@@ -4,6 +4,7 @@ import path from 'node:path';
 import sharp from 'sharp';
 import type { Media } from '@prisma/client';
 import { AUDIO_LIMIT, sniffAudio, validateAudioFile } from './media-audio';
+import { rasterizeSvgLogo } from './svg-logo';
 import { db } from '@/lib/db';
 import { ApiError } from '@/lib/http';
 import { probeMedia } from '@/lib/export';
@@ -107,6 +108,12 @@ export async function uploadMedia(request: Request) {
     throw new ApiError(400, 'PROJECT_NOT_FOUND');
   if (file.size > VIDEO_LIMIT) throw new ApiError(413, 'FILE_TOO_LARGE');
   let bytes: Buffer = Buffer.from(await file.arrayBuffer());
+  const svgDeclared =
+    file.type === 'image/svg+xml' || /\.svg$/i.test(file.name);
+  if (svgDeclared) {
+    if (role !== 'LOGO') throw new ApiError(400, 'SVG_LOGO_ONLY');
+    bytes = await rasterizeSvgLogo(bytes);
+  }
   const imageFormat = sniffImage(bytes);
   const audioFormat = sniffAudio(bytes, file.name);
   let mimeType: string;
@@ -167,12 +174,6 @@ export async function uploadMedia(request: Request) {
     mimeType = 'video/mp4';
     extension = 'mp4';
   } else {
-    if (file.type === 'image/svg+xml' || /\.svg$/i.test(file.name))
-      throw new ApiError(
-        400,
-        'SVG_UNSUPPORTED',
-        'Utilisez un logo PNG, JPG ou WebP. Le format SVG n’est pas pris en charge dans cette version.',
-      );
     throw new ApiError(
       400,
       'UNSUPPORTED_MEDIA',
@@ -210,8 +211,9 @@ export async function uploadMedia(request: Request) {
     const media = await db.media.create({
       data: {
         name:
-          file.name.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 200) ||
-          `media.${extension}`,
+          (svgDeclared ? file.name.replace(/\.svg$/i, '') + '.png' : file.name)
+            .replace(/[\x00-\x1f\x7f]/g, '')
+            .slice(0, 200) || `media.${extension}`,
         path: relativePath,
         mimeType,
         size: bytes.length,
@@ -237,6 +239,8 @@ export async function deleteMedia(id: string) {
       where: { OR: [{ sourceMediaId: id }, { outputMediaId: id }] },
     });
     if (referencedJob) throw new ApiError(409, 'MEDIA_IN_USE');
+    if (await tx.brandPreset.findFirst({ where: { logoMediaId: id } }))
+      throw new ApiError(409, 'MEDIA_IN_USE');
     if (await tx.mannequin.findFirst({ where: { referenceMediaId: id } }))
       throw new ApiError(409, 'MEDIA_IN_USE');
     const looks = await tx.look.findMany({

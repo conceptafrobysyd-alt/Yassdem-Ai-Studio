@@ -22,10 +22,12 @@ model Settings {
   defaultProvider       String   @default("local")
   monthlyBudgetCents    Int      @default(0)
   providerEnabled       Boolean  @default(false)
+  replicateEnabled      Boolean  @default(false)
   usdToEur              Float    @default(1)
   logoSize              Int      @default(15)
   logoOpacity           Float    @default(0.8)
   logoPosition          String   @default("bottom-right")
+  logoFade              Boolean  @default(false)
   passwordHash          String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -57,6 +59,7 @@ model Media {
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
+  brandPresets BrandPreset[]
 }
 
 model Job {
@@ -110,4 +113,18 @@ model Look {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   @@index([projectId, createdAt])
+}
+
+model BrandPreset {
+  id           String   @id @default(cuid())
+  name         String
+  logoMediaId  String?
+  logo         Media?   @relation(fields: [logoMediaId], references: [id], onDelete: Restrict)
+  logoSize     Int      @default(15)
+  logoOpacity  Float    @default(0.8)
+  logoPosition String   @default("bottom-right")
+  logoFade     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  @@index([logoMediaId])
 }

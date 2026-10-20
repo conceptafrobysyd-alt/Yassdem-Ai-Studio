@@ -85,11 +85,13 @@ const emptyTimeline = (): EditorTimeline => ({
   format: '9:16',
   resolution: 1080,
   codec: 'h264',
+  quality: 21,
   logoId: null,
   logoSize: 15,
   logoOpacity: 0.8,
   logoPosition: 'bottom-right',
   logoFade: false,
+  logoTiming: 'all',
 });
 const totalDuration = (timeline: EditorTimeline) =>
   Math.max(
@@ -1155,6 +1157,18 @@ export function EditorStudio({
                   <option value="h265">H.265 / HEVC</option>
                 </Select>
               </Field>
+              <Field label={t('quality')} hint={t('qualityHelp')}>
+                <Select
+                  value={timeline.quality}
+                  onChange={(event) =>
+                    patch('quality', Number(event.target.value))
+                  }
+                >
+                  <option value={18}>{t('qualityHigh')}</option>
+                  <option value={21}>{t('qualityBalanced')}</option>
+                  <option value={28}>{t('qualitySmall')}</option>
+                </Select>
+              </Field>
               <Field label={t('logo')}>
                 <Select
                   value={timeline.logoId || ''}
@@ -1212,6 +1226,21 @@ export function EditorStudio({
                           {t(item.label)}
                         </option>
                       ))}
+                    </Select>
+                  </Field>
+                  <Field label={t('logoTiming')} hint={t('logoTimingHelp')}>
+                    <Select
+                      value={timeline.logoTiming}
+                      onChange={(event) =>
+                        patch(
+                          'logoTiming',
+                          event.target.value as EditorTimeline['logoTiming'],
+                        )
+                      }
+                    >
+                      <option value="all">{t('logoAll')}</option>
+                      <option value="start">{t('logoStart')}</option>
+                      <option value="end">{t('logoEnd')}</option>
                     </Select>
                   </Field>
                   <label className="editor-checkbox">

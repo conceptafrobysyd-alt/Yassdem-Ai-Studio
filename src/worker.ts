@@ -3,6 +3,7 @@ import path from 'node:path';
 import { processPendingJobs } from './lib/jobs';
 import { processFashionJobs } from './lib/fashion-jobs';
 import { processEditJobs } from './lib/editor-jobs';
+import { processReplicateJobs } from './lib/replicate-jobs';
 import { db } from './lib/db';
 import { storageRoot } from './lib/media';
 
@@ -93,6 +94,7 @@ async function main() {
         await processPendingJobs();
         await processFashionJobs();
         await processEditJobs();
+        await processReplicateJobs();
       } catch {
         console.error(
           '[worker] Job processing failed; retrying pending tasks.',

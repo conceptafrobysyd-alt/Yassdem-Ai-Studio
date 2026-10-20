@@ -286,6 +286,9 @@ export async function archiveProject(id: string) {
   });
   if (!project) throw new ApiError(404, 'PROJECT_NOT_FOUND');
   const archiveMedia = await includeReferencedMedia(project);
+  const brandPresets = await db.brandPreset.findMany({
+    where: { logoMediaId: { in: archiveMedia.map((media) => media.id) } },
+  });
   for (const media of archiveMedia) {
     if (!(await stat(resolveMediaPath(media.path)).catch(() => null)))
       throw new ApiError(409, 'MEDIA_FILE_MISSING');
@@ -300,6 +303,7 @@ export async function archiveProject(id: string) {
     format: 'yassdem-project-backup',
     version: 1,
     exportedAt: new Date().toISOString(),
+    brandPresets,
     project: {
       ...publicProject(project),
       media: undefined,

@@ -23,7 +23,9 @@ Les images PNG, JPEG et WebP sont limitées à 5 Mo, les vidéos MP4 à 100 Mo e
 
 Les formats proposés sont 9:16, 4:5, 1:1 et 16:9. Les résolutions 720, 1080, 1440 et 2160 désignent le petit côté ; par exemple, 16:9 en 2160 donne 3840 × 2160 pixels. Les sources sont adaptées au cadre par redimensionnement et recadrage. Le H.264 nécessite `libx264` et le H.265 nécessite `libx265` dans FFmpeg.
 
-Un export 2160p peut agrandir des sources plus petites. Il ne crée pas de détails natifs et n'applique pas d'upscaling IA. Les métadonnées du résultat indiquent l'agrandissement éventuel et l'absence d'upscaling IA. Le logo réutilise les images raster de la médiathèque avec position, taille, opacité et fondu facultatif.
+La compression propose trois réglages : qualité élevée, équilibré et fichier léger. Le montage utilise équilibré par défaut ; le studio produit démarre sur qualité élevée. Ils pilotent réellement l’encodage, respectivement avec les valeurs CRF 18, 21 et 28 ; une valeur plus basse privilégie la qualité et produit généralement un fichier plus volumineux. La taille finale dépend aussi du contenu, du codec et de la durée.
+
+Un export 2160p peut agrandir des sources plus petites. Il ne crée pas de détails natifs et n'applique pas d'upscaling IA. Les métadonnées du résultat indiquent l'agrandissement éventuel et l'absence d'upscaling IA. Le logo réutilise les images raster de la médiathèque avec position, taille, opacité et fondu facultatif. Depuis la phase 5, il peut être affiché sur toute la vidéo ou pendant au plus deux secondes au début ou à la fin. Il se superpose aux clips ; aucun carton supplémentaire n’est ajouté. Un logo SVG simple est d’abord contrôlé et converti en PNG à l’import.
 
 Les textes utilisent le filtre FFmpeg `drawtext` et une police locale. L'application recherche DejaVu Sans ou Liberation Sans sous Linux, Arial sous macOS et Windows. La variable serveur facultative `FFMPEG_FONT_PATH` permet de préciser un fichier de police autorisé. Une police indisponible donne une erreur explicite ; les textes ne sont pas supprimés silencieusement.
 
@@ -43,7 +45,7 @@ La rédaction locale assemble uniquement les informations fournies. Elle ne trad
 
 Un lien affilié exige une mention publicitaire. L'application conserve une mention explicite dans chaque description et refuse son retrait lors d'une modification. Relisez les textes et adaptez les mentions à votre situation avant publication.
 
-Le mode Ollama appelle un modèle installé séparément sur votre serveur local. Il est facultatif : un service absent ou une réponse invalide donnent une erreur, sans remplacement silencieux par une prétendue génération IA. Configurez `OLLAMA_URL` (par défaut `http://127.0.0.1:11434`) et `OLLAMA_MODEL` avec le nom exact d'un modèle déjà installé. Le service doit être accessible en boucle locale ; aucun modèle n'est téléchargé automatiquement. Aucune inférence Ollama réelle n'a été validée dans cet environnement.
+Le mode Ollama appelle un modèle installé séparément sur votre serveur local. Il est facultatif : un service absent ou une réponse invalide donnent une erreur, sans remplacement silencieux par une prétendue génération IA. Configurez `OLLAMA_URL` (par défaut `http://127.0.0.1:11434`) et `OLLAMA_MODEL` avec le nom exact d'un modèle déjà installé. Le service doit être accessible en boucle locale ; aucun modèle n'est téléchargé automatiquement. Le [guide des fournisseurs](PHASE_5.md) précise les contrôles de connexion. Aucune inférence Ollama réelle n'a été validée dans cet environnement.
 
 ## Fichiers et sauvegarde
 

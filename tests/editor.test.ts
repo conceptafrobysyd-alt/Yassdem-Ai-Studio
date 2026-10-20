@@ -5,6 +5,7 @@ import { mkdtemp, readFile, readdir, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
+import { createLocalAnimation, exportVideo } from '@/lib/export';
 import { PrismaClient } from '@prisma/client';
 import { PrismaBetterSQLite3 } from '@prisma/adapter-better-sqlite3';
 import {
@@ -185,11 +186,17 @@ describe('editor timeline validation', () => {
       resolution: 2160,
       codec: 'h265',
       musicVolume: 0.25,
+      logoTiming: 'all',
+      quality: 21,
     });
     expect(editorDuration(timeline)).toBe(3.65);
   });
   it('rejects unbounded work, filter injection and captions outside the final timeline', () => {
     const clip = { mediaId: 'source', startSeconds: 0, endSeconds: 1 };
+    for (const quality of [17, 33, 21.5, NaN])
+      expect(() => parseEditorTimeline({ clips: [clip], quality })).toThrow(
+        'INVALID_QUALITY',
+      );
     expect(() => parseEditorTimeline({ clips: Array(13).fill(clip) })).toThrow(
       'EDITOR_CLIP_LIMIT',
     );
@@ -205,6 +212,12 @@ describe('editor timeline validation', () => {
         transition: 'fade;movie=/etc/passwd',
       }),
     ).toThrow('INVALID_EDITOR_TRANSITION');
+    expect(() =>
+      parseEditorTimeline({
+        clips: [clip],
+        logoTiming: "start';movie=/etc/passwd",
+      }),
+    ).toThrow('INVALID_LOGO_SETTINGS');
     expect(() =>
       parseEditorTimeline({
         clips: [clip],
@@ -274,6 +287,8 @@ describe('persisted editor workflow', () => {
       musicMediaId: musicMedia.id,
       format: '1:1',
       resolution: 720,
+      logoTiming: 'end',
+      quality: 28,
     });
     expect(await saveEditorTimeline(project.id, timeline)).toEqual(timeline);
     expect(await getEditorTimeline(project.id)).toEqual(timeline);
@@ -315,6 +330,8 @@ describe('persisted editor workflow', () => {
     await saveEditorTimeline(project.id, {
       ...timeline,
       clips: [...timeline.clips].reverse(),
+      logoTiming: 'start',
+      quality: 18,
     });
     const untouched = await db.job.create({
       data: {
@@ -341,6 +358,8 @@ describe('persisted editor workflow', () => {
     });
     const metadata = JSON.parse(finished.parameters);
     expect(metadata.timeline.clips[0].mediaId).toBe(blueMedia.id);
+    expect(metadata.timeline.logoTiming).toBe('end');
+    expect(metadata.timeline.quality).toBe(28);
     const cover = await db.media.findUniqueOrThrow({
       where: { id: metadata.coverMediaId },
     });
@@ -366,6 +385,155 @@ describe('persisted editor workflow', () => {
 });
 
 describe('real FFmpeg editor', () => {
+  it('reduces real encoded file size at stronger compression in both renderers', async () => {
+    const source = join(directory, 'detail.mp4');
+    await ffmpegCommand([
+      '-f',
+      'lavfi',
+      '-i',
+      'testsrc2=s=320x240:r=24:d=1.5',
+      '-c:v',
+      'libx264',
+      '-threads',
+      '2',
+      '-crf',
+      '16',
+      '-pix_fmt',
+      'yuv420p',
+      source,
+    ]);
+    for (const renderer of ['export', 'editor']) {
+      const sizes: number[] = [];
+      for (const quality of [18, 28]) {
+        const outputPath = join(
+          directory,
+          `compression-${renderer}-${quality}.mp4`,
+        );
+        const result =
+          renderer === 'export'
+            ? await exportVideo({
+                inputPath: source,
+                outputPath,
+                durationSeconds: 1.5,
+                format: '1:1',
+                resolution: 720,
+                quality,
+              })
+            : await renderEditorTimeline({
+                timeline: parseEditorTimeline({
+                  clips: [
+                    { mediaId: 'detail', startSeconds: 0, endSeconds: 1.5 },
+                  ],
+                  format: '1:1',
+                  resolution: 720,
+                  quality,
+                }),
+                clipPaths: [source],
+                outputPath,
+                coverPath: join(directory, `compression-${quality}.jpg`),
+              });
+        expect(result.durationSeconds).toBeCloseTo(1.5, 1);
+        expect(result).toMatchObject({ width: 720, height: 720 });
+        sizes.push(result.bytes);
+      }
+      expect(sizes[1]).toBeLessThan(sizes[0] * 0.85);
+    }
+  }, 60_000);
+
+  it.each(['start', 'end'] as const)(
+    'shows a fading logo only at the %s in both renderers',
+    async (timing) => {
+      const still = join(directory, `timed-${timing}.png`);
+      await sharp({
+        create: { width: 320, height: 240, channels: 3, background: '#0000ff' },
+      })
+        .png()
+        .toFile(still);
+      const timeline = parseEditorTimeline({
+        clips: [
+          { mediaId: 'blue', startSeconds: 0, endSeconds: 2 },
+          { mediaId: 'blue', startSeconds: 0, endSeconds: 2 },
+        ],
+        format: '1:1',
+        resolution: 720,
+        logoId: 'logo',
+        logoSize: 10,
+        logoOpacity: 1,
+        logoPosition: 'top-left',
+        logoTiming: timing,
+        logoFade: true,
+      });
+      const animation = join(directory, `animation-logo-${timing}.mp4`);
+      await createLocalAnimation({
+        imagePath: still,
+        outputPath: animation,
+        durationSeconds: 4,
+        format: '1:1',
+        resolution: 720,
+        logo: {
+          path: logo,
+          sizePercent: 10,
+          opacity: 1,
+          position: 'top-left',
+          timing,
+          fade: true,
+        },
+      });
+      const edit = join(directory, `editor-logo-${timing}.mp4`);
+      await renderEditorTimeline({
+        timeline,
+        clipPaths: [blue, blue],
+        logo: { path: logo },
+        outputPath: edit,
+        coverPath: join(directory, `editor-logo-${timing}.jpg`),
+      });
+      for (const path of [animation, edit]) {
+        const visible = pixel(
+          await frame(path, timing === 'start' ? 0.8 : 3.2),
+          50,
+          50,
+        );
+        const absent = pixel(
+          await frame(path, timing === 'start' ? 3.2 : 0.8),
+          50,
+          50,
+        );
+        const faded = pixel(
+          await frame(path, timing === 'start' ? 0.04 : 3.9),
+          50,
+          50,
+        );
+        expect(visible[1]).toBeGreaterThan(220);
+        expect(visible[2]).toBeLessThan(25);
+        expect(absent[1]).toBeLessThan(20);
+        expect(absent[2]).toBeGreaterThan(220);
+        expect(faded[1]).toBeLessThan(120);
+        expect(faded[2]).toBeGreaterThan(100);
+      }
+    },
+    60_000,
+  );
+
+  it('places an end logo against the actual video end when the requested export is longer', async () => {
+    const outputPath = join(directory, 'short-video-end-logo.mp4');
+    const result = await exportVideo({
+      inputPath: blue,
+      outputPath,
+      durationSeconds: 5,
+      format: '1:1',
+      resolution: 720,
+      logo: {
+        path: logo,
+        sizePercent: 10,
+        opacity: 1,
+        position: 'top-left',
+        timing: 'end',
+      },
+    });
+    expect(result.durationSeconds).toBeCloseTo(2, 1);
+    expect(pixel(await frame(outputPath, 0.8), 50, 50)[1]).toBeGreaterThan(220);
+  }, 30_000);
+
   it('trims and reorders clips, draws UTF-8 captions/logo, loops licensed music and extracts a cover', async () => {
     const timeline = parseEditorTimeline({
       clips: [

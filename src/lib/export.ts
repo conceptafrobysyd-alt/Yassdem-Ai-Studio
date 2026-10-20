@@ -7,12 +7,14 @@ export type VideoResolution = 720 | 1080 | 1440 | 2160;
 export type VideoCodec = 'h264' | 'h265';
 export type LogoPosition =
   'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
+export type LogoTiming = 'all' | 'start' | 'end';
 export interface ExportLogo {
   path: string;
   position?: LogoPosition;
   sizePercent?: number;
   opacity?: number;
   fade?: boolean;
+  timing?: LogoTiming;
 }
 export interface ExportOptions {
   outputPath: string;
@@ -32,6 +34,25 @@ export class ExportError extends Error {
     super(code);
     this.name = 'ExportError';
   }
+}
+
+/** Timed logos are overlays on the existing video, never extra title cards. */
+export function getLogoTimingWindow(
+  duration: number,
+  timing: LogoTiming = 'all',
+  preferredFadeSeconds = 0.5,
+) {
+  if (!['all', 'start', 'end'].includes(timing))
+    throw new ExportError('INVALID_LOGO_SETTINGS');
+  if (!Number.isFinite(duration) || duration <= 0)
+    throw new ExportError('INVALID_DURATION');
+  const span = timing === 'all' ? duration : Math.min(2, duration);
+  const start = timing === 'end' ? duration - span : 0;
+  return {
+    start,
+    end: start + span,
+    fadeSeconds: Math.min(preferredFadeSeconds, span / 2),
+  };
 }
 
 export function getExportDimensions(
@@ -262,6 +283,12 @@ async function performExport(
     const percent = options.logo.sizePercent ?? 18;
     const opacity = options.logo.opacity ?? 0.8;
     const position = options.logo.position ?? 'bottom-right';
+    const timing = getLogoTimingWindow(
+      localAnimation
+        ? duration
+        : Math.min(duration, native.durationSeconds ?? duration),
+      options.logo.timing,
+    );
     if (
       !Number.isFinite(percent) ||
       percent < 3 ||
@@ -291,8 +318,8 @@ async function performExport(
     );
     filter += `;[1:v]scale=${Math.round((width * percent) / 100 / 2) * 2}:-2,format=rgba,colorchannelmixer=aa=${opacity}`;
     if (options.logo.fade)
-      filter += `,fade=t=in:st=0:d=0.5:alpha=1,fade=t=out:st=${Math.max(0.5, duration - 0.5)}:d=0.5:alpha=1`;
-    filter += `[logo];[base][logo]overlay=${positions[position]}:shortest=1[out]`;
+      filter += `,fade=t=in:st=${timing.start}:d=${timing.fadeSeconds}:alpha=1,fade=t=out:st=${timing.end - timing.fadeSeconds}:d=${timing.fadeSeconds}:alpha=1`;
+    filter += `[logo];[base][logo]overlay=${positions[position]}:shortest=1:enable='between(t,${timing.start},${timing.end})'[out]`;
     outputLabel = 'out';
   }
   args.push(

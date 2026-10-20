@@ -118,10 +118,22 @@ async function main() {
       jobs.enqueueJob({ ...input('invalid-codec'), codec: '' as 'h264' }),
       { code: 'INVALID_CODEC' },
     );
+    for (const quality of [17, 33, 21.5, NaN])
+      await assert.rejects(
+        jobs.enqueueJob({ ...input('invalid-quality'), quality }),
+        { code: 'INVALID_QUALITY' },
+      );
     await assert.rejects(
       jobs.enqueueJob({
         ...input('invalid-logo-position'),
         logoPosition: '' as 'center',
+      }),
+      { code: 'INVALID_LOGO_SETTINGS' },
+    );
+    await assert.rejects(
+      jobs.enqueueJob({
+        ...input('invalid-logo-timing'),
+        logoTiming: "start';movie=/etc/passwd" as 'start',
       }),
       { code: 'INVALID_LOGO_SETTINGS' },
     );
@@ -139,11 +151,15 @@ async function main() {
       durationSeconds: 15,
       confirmedPaid: false,
       expectedCostCents: undefined,
+      logoTiming: 'end',
+      quality: 28,
     });
     assert.equal(local.estimatedCostCents, 0);
     assert.equal(local.reservedCents, 0);
     assert.equal(JSON.parse(local.parameters).sourceKind, 'local-animation');
     assert.equal(JSON.parse(local.parameters).durationSeconds, 15);
+    assert.equal(JSON.parse(local.parameters).logoTiming, 'end');
+    assert.equal(JSON.parse(local.parameters).quality, 28);
     assert.equal(requests, 0);
     passed.push('free-local-fifteen-seconds');
 
