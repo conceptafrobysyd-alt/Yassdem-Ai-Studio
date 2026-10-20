@@ -26,6 +26,12 @@ Les 31 tests ciblés StylePreset, Fashion et ComfyUI passent. Le nouveau test pi
 
 Le build et TypeScript passent. Dans Chromium, un style avec coupe ample, longueur, couleurs, superposition et décor a été créé puis appliqué et enregistré dans un look. Le rendu réel de planche, les variantes, le passage FR/EN, la conservation du résultat après sauvegarde et l’affichage mobile ont aussi été vérifiés sans erreur du navigateur.
 
+## Compléments — Import autorisé
+
+Les 49 tests d’import passent : protocole Shopify et JSON, adresses privées et métadonnées cloud, DNS public épinglé, validation TLS, refus des redirections et en-têtes sensibles, limites, décodage de vrais pixels, SQLite, idempotence, références et nettoyage transactionnel. Le transport distant est simulé. Le build et TypeScript passent.
+
+Dans Chromium, le formulaire bloque la soumission sans confirmation des droits, affiche le refus réel d’une adresse privée sans créer de média, conserve le brouillon au passage FR/EN et reste utilisable à 390 pixels. Un ancien brouillon produit a aussi été enregistré après modification récente du montage et du SEO : ces données sont conservées. Aucun import depuis une boutique réelle n’a été validé, la résolution DNS externe directe ayant échoué sur cette machine.
+
 ## Phase 5 — Fournisseurs et finitions
 
 | Contrôle                                   | Résultat                                                                                                                                                                                   |

@@ -55,6 +55,6 @@ Les parcours locaux fonctionnent sans fournisseur externe. La génération Runwa
 
 Kling, les modèles Replicate demandant un autre schéma d'entrée et l'optimisation de modèles GPU n'ont pas d'adaptateur ou de parcours dédié. Les services locaux et leurs poids restent à installer séparément ; les tests simulés ne prouvent aucune inférence réelle.
 
-L'import depuis une URL produit, le scraping, les publications sur les réseaux sociaux et Pippit ne sont pas intégrés. Aucun bouton ne doit être interprété comme une activation de ces services.
+L’import d’un lien produit Shopify ou d’un flux JSON autorisé est implémenté, avec protection SSRF et téléchargement d’images validées. Le réseau de cette machine n’a pas permis de valider une boutique réelle. Les pages HTML, sites authentifiés et autres schémas ne sont pas analysés. Le scraping, les publications sur les réseaux sociaux et Pippit ne sont pas intégrés.
 
 Le montage propose un aperçu complet à 360p avant l’export définitif. L’export d’image calcule aussi un aperçu réel du cadrage et du logo sans enregistrer de média. Le [guide des compléments](COMPLEMENTS.md) précise ce fonctionnement. Le texte alternatif Pinterest reste à adapter au visuel final. Un CSV préparé exige une URL publique de média et une vérification manuelle avant import.

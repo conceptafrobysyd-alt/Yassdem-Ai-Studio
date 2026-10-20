@@ -64,6 +64,7 @@ import { ProvidersPanel } from './providers-panel';
 import { BrandPresetsPanel } from './brand-presets-panel';
 import { ImageExportPanel } from './image-export-panel';
 import { StylePresetsPanel } from './style-presets-panel';
+import { ProductImportPanel } from './product-import-panel';
 import fr from '@/messages/fr';
 import en from '@/messages/en';
 type Locale = 'fr' | 'en';
@@ -1210,6 +1211,18 @@ function StudioApp({
                       </div>
                     )}
                   </section>
+                  <ProductImportPanel
+                    locale={locale}
+                    projectId={project.id}
+                    projects={projects}
+                    onRefresh={reload}
+                    onImported={(files) => {
+                      if (files[0]) {
+                        setParam('sourceMediaId', files[0].id);
+                        setPlayingJob(null);
+                      }
+                    }}
+                  />
                   <section className="panel">
                     <div className="panel-heading">
                       <h2>

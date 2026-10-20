@@ -19,3 +19,11 @@ Les paramètres et Fashion Studio proposent un catalogue personnel de styles. Ch
 Dans Fashion Studio, **Ajouter ce style au look** applique explicitement le style au brouillon. Les noms et listes se combinent ; les descriptions non vides et la coupe du dernier style appliqué prennent la priorité. Une combinaison dépassant les limites des listes est refusée. Le profil choisi, son option hijab et le prompt restent inchangés.
 
 Enregistrez le look après application. Les valeurs sont copiées dans le look et dans les tâches futures : modifier ou supprimer le style d’origine ne modifie pas les looks, tâches ou archives existants. Ces réglages sont des instructions pour les workflows IA configurés ; leur enregistrement ne prouve aucune génération ou fidélité de modèle.
+
+## Import produit autorisé
+
+Le studio produit accepte une fiche Shopify via son API produit officielle, ou un flux JSON fourni et autorisé par le marchand. Il enregistre les informations et au plus trois images réelles après confirmation des droits. Il ne lit pas le HTML et ne contourne ni connexion ni protection. Les images importées sont proposées comme source du projet.
+
+L’import protège les destinations réseau, épingle le DNS public pour la connexion TLS et refuse les redirections. Il ne transmet aucun cookie ou secret. La description, les fichiers, le registre d’import et les références sont enregistrés ensemble ; un échec annule l’ensemble et nettoie les fichiers partiels. Les réessais reprennent la même demande.
+
+Le [guide d’import](PRODUCT_IMPORT.md) détaille les contrats et les limites. Les tests de transport utilisent des réponses DNS/HTTPS simulées avec de vrais fichiers et une vraie base. Sur ce cloud, une résolution DNS externe directe n’a pas abouti : aucun import depuis une boutique réelle n’est revendiqué. Le déploiement doit permettre les domaines de la boutique et de ses images ainsi qu’une connexion DNS/TLS compatible avec ces contrôles.
