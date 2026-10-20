@@ -20,6 +20,12 @@ Le build de production et `npm run typecheck` avec génération des types Next.j
 
 Dans Chromium, la vidéo d’aperçu se lit réellement avant un export définitif, en conservant les réglages finaux 1080p/H.265/CRF18. L’aperçu d’image montre les vrais pixels rouges du logo, ne crée pas de média enregistré et disparaît lorsque son opacité est modifiée. Aucune erreur du navigateur n’a été observée dans ces parcours.
 
+## Compléments — Styles réutilisables
+
+Les 31 tests ciblés StylePreset, Fashion et ComfyUI passent. Le nouveau test pilote cinq groupes avec une vraie SQLite : accès privé et origine, entrées strictes, combinaison des styles, indépendance du profil et du hijab, conservation des valeurs des looks et tâches après modification ou suppression d’un style. Les anciens looks restent compatibles et un enregistrement sans changement conserve leur résultat.
+
+Le build et TypeScript passent. Dans Chromium, un style avec coupe ample, longueur, couleurs, superposition et décor a été créé puis appliqué et enregistré dans un look. Le rendu réel de planche, les variantes, le passage FR/EN, la conservation du résultat après sauvegarde et l’affichage mobile ont aussi été vérifiés sans erreur du navigateur.
+
 ## Phase 5 — Fournisseurs et finitions
 
 | Contrôle                                   | Résultat                                                                                                                                                                                   |

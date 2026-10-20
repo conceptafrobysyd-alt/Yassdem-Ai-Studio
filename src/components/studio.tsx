@@ -63,6 +63,7 @@ import { SEOStudio } from './seo-studio';
 import { ProvidersPanel } from './providers-panel';
 import { BrandPresetsPanel } from './brand-presets-panel';
 import { ImageExportPanel } from './image-export-panel';
+import { StylePresetsPanel } from './style-presets-panel';
 import fr from '@/messages/fr';
 import en from '@/messages/en';
 type Locale = 'fr' | 'en';
@@ -2102,6 +2103,7 @@ function StudioApp({
                   </label>
                   <p className="field-hint">{t('futureStyleNote')}</p>
                 </SettingsPanel>
+                <StylePresetsPanel locale={locale} />
               </div>
               <div className="settings-column">
                 <SettingsPanel

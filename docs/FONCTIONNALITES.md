@@ -39,7 +39,7 @@ Ce document distingue le fonctionnement local livré, les intégrations qui exig
 
 ## Exigences V1.1 partiellement couvertes
 
-Les styles prédéfinis peuvent être combinés et des noms de styles personnalisés enregistrés ; le hijab reste une option distincte. Fashion Studio conserve la coupe, les couleurs, les accessoires et superpositions décrits librement, la couverture, l'ambiance et les instructions créatives du look. Les profils conservent les caractéristiques du mannequin et sa pose. Ces descriptions sont transmises aux workflows ComfyUI configurés ; leur respect dépend du moteur et des modèles. Leur enregistrement ou une planche locale ne réalisent pas un essayage virtuel.
+Les styles peuvent être combinés et enregistrés avec leurs propres paramètres : coupe, longueur, couleurs, accessoires, superpositions, couverture, ambiance, décor, pose et caractéristiques souhaitées. Leur application dans un look est explicite et ne modifie ni le profil ni le hijab. Les valeurs sont copiées dans les looks et les tâches ; modifier un style ne change pas les résultats existants. Ces descriptions sont transmises aux workflows ComfyUI configurés ; leur respect dépend du moteur et des modèles. Leur enregistrement ou une planche locale ne réalisent pas un essayage virtuel.
 
 La suppression d'un projet est bloquée s'il possède des tâches en cours, des engagements financiers ou des tâches payantes déjà envoyées au fournisseur : l'historique financier doit rester disponible. Les médias restent dans la bibliothèque après suppression du projet. Les images sont décodées et normalisées, avec une limite de 40 mégapixels. Les montants et tailles sont limités côté serveur, pas seulement dans les champs de l'interface.
 

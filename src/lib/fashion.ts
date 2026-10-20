@@ -20,6 +20,11 @@ export interface LookParameters {
   accessories: string[];
   coverage: string;
   mood: string;
+  length: string;
+  layering: string;
+  decor: string;
+  pose: string;
+  bodyFeatures: string;
   prompt: string;
 }
 export const DEFAULT_MANNEQUIN: MannequinParameters = {
@@ -37,6 +42,11 @@ export const DEFAULT_LOOK: LookParameters = {
   accessories: [],
   coverage: '',
   mood: '',
+  length: '',
+  layering: '',
+  decor: '',
+  pose: '',
+  bodyFeatures: '',
   prompt: '',
 };
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -135,7 +145,16 @@ export function validateLookParameters(value: unknown): LookParameters {
       throw new ApiError(400, 'INVALID_FIT');
     result.fit = input.fit as LookParameters['fit'];
   }
-  for (const key of ['coverage', 'mood', 'prompt'] as const)
+  for (const key of [
+    'coverage',
+    'mood',
+    'length',
+    'layering',
+    'decor',
+    'pose',
+    'bodyFeatures',
+    'prompt',
+  ] as const)
     if (key in input)
       result[key] = boundedString(
         input[key],
@@ -331,7 +350,9 @@ export async function getLookRenderContext(id: string) {
     mannequin,
     garments: ordered as Media[],
     reference,
-    parameters: parseStored(look.parameters, DEFAULT_LOOK),
+    parameters: validateLookParameters(
+      parseStored(look.parameters, DEFAULT_LOOK),
+    ),
     mannequinParameters: mannequin
       ? parseStored(mannequin.parameters, DEFAULT_MANNEQUIN)
       : null,
@@ -354,7 +375,9 @@ export async function publicLook(look: Look) {
   return {
     ...look,
     garmentMediaIds: ids,
-    parameters: parseStored(look.parameters, DEFAULT_LOOK),
+    parameters: validateLookParameters(
+      parseStored(look.parameters, DEFAULT_LOOK),
+    ),
     mannequin: mannequin ? publicMannequin(mannequin) : null,
     sourceMedia: ids.flatMap((id) => {
       const item = media.find((item) => item.id === id);
@@ -469,7 +492,9 @@ export async function duplicateLook(id: string) {
     projectId: look.projectId,
     mannequinId: look.mannequinId,
     garmentMediaIds: parseStored(look.garmentMediaIds, []),
-    parameters: parseStored(look.parameters, DEFAULT_LOOK),
+    parameters: validateLookParameters(
+      parseStored(look.parameters, DEFAULT_LOOK),
+    ),
   });
 }
 function xml(value: string) {

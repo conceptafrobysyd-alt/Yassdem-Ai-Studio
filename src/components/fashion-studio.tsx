@@ -40,6 +40,12 @@ import {
   cn,
 } from './ui/primitives';
 import { fashionMessages, type FashionMessageKey } from '@/messages/fashion';
+import { StylePresetsPanel } from './style-presets-panel';
+import {
+  applyStylePresetToLook,
+  STYLE_DESCRIPTOR_KEYS,
+} from '@/lib/style-preset-values';
+import { stylePresetMessages } from '@/messages/style-presets';
 import './fashion.css';
 export type FashionProject = {
   id: string;
@@ -94,6 +100,11 @@ type LookParameters = {
   accessories: string[];
   coverage: string;
   mood: string;
+  length: string;
+  layering: string;
+  decor: string;
+  pose: string;
+  bodyFeatures: string;
   prompt: string;
 };
 type Look = {
@@ -169,6 +180,11 @@ const DEFAULT_LOOK: LookParameters = {
   accessories: [],
   coverage: '',
   mood: '',
+  length: '',
+  layering: '',
+  decor: '',
+  pose: '',
+  bodyFeatures: '',
   prompt: '',
 };
 const emptyModel = (): ModelForm => ({
@@ -1065,6 +1081,26 @@ export function FashionStudio({
                     />
                   </Field>
                 </div>
+                <details className="fashion-style-presets">
+                  <summary>{stylePresetMessages[locale].title}</summary>
+                  <StylePresetsPanel
+                    locale={locale}
+                    disabled={activeRender}
+                    onApply={(preset) => {
+                      const combined = applyStylePresetToLook(
+                        {
+                          ...parameters,
+                          colors: listFromText(colorsText),
+                          accessories: listFromText(accessoriesText),
+                        },
+                        preset,
+                      );
+                      setParameters(combined);
+                      setColorsText(combined.colors.join(', '));
+                      setAccessoriesText(combined.accessories.join(', '));
+                    }}
+                  />
+                </details>
                 <div className="field-pair">
                   <Field label={t('accessories')} hint={t('listHelp')}>
                     <Input
@@ -1113,6 +1149,23 @@ export function FashionStudio({
                     disabled={activeRender}
                   />
                 </Field>
+                <details className="fashion-style-presets">
+                  <summary>{stylePresetMessages[locale].independent}</summary>
+                  {STYLE_DESCRIPTOR_KEYS.filter(
+                    (key) => !['coverage', 'mood'].includes(key),
+                  ).map((key) => (
+                    <Field key={key} label={stylePresetMessages[locale][key]}>
+                      <Input
+                        value={parameters[key]}
+                        maxLength={200}
+                        onChange={(event) =>
+                          patchParameter(key, event.target.value)
+                        }
+                        disabled={activeRender}
+                      />
+                    </Field>
+                  ))}
+                </details>
                 {isDirty && selectedLook?.outputMedia && (
                   <p className="field-hint">{t('editedNotice')}</p>
                 )}

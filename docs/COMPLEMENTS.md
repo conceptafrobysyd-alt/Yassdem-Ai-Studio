@@ -11,3 +11,11 @@ L’export d’image propose **Prévisualiser les réglages**. Le serveur calcul
 Le studio produit enregistre désormais ses seuls réglages dans une transaction, en conservant les paramètres les plus récents des autres ateliers. Un ancien brouillon produit n’efface plus un montage, un texte Pinterest, une référence produit ou l’historique d’exports d’image.
 
 Les définitions TypeScript générées par Next.js sont exclues de Git. `npm run typecheck` commence par `next typegen`, conformément à la documentation de la version installée, avant de vérifier les types.
+
+## Styles avec paramètres réutilisables
+
+Les paramètres et Fashion Studio proposent un catalogue personnel de styles. Chaque style enregistre sa coupe, sa longueur, ses couleurs, accessoires, superpositions, couverture vestimentaire, ambiance, décor, pose et caractéristiques souhaitées du mannequin. Jusqu’à 100 styles peuvent être conservés.
+
+Dans Fashion Studio, **Ajouter ce style au look** applique explicitement le style au brouillon. Les noms et listes se combinent ; les descriptions non vides et la coupe du dernier style appliqué prennent la priorité. Une combinaison dépassant les limites des listes est refusée. Le profil choisi, son option hijab et le prompt restent inchangés.
+
+Enregistrez le look après application. Les valeurs sont copiées dans le look et dans les tâches futures : modifier ou supprimer le style d’origine ne modifie pas les looks, tâches ou archives existants. Ces réglages sont des instructions pour les workflows IA configurés ; leur enregistrement ne prouve aucune génération ou fidélité de modèle.
