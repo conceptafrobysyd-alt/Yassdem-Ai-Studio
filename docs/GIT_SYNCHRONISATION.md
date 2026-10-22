@@ -2,9 +2,26 @@
 
 Les étapes validées sont enregistrées en commits locaux et repérées par les tags `phase-1-2`, `phase-3`, `phase-4`, `phase-5` puis `complement-*`. Les premiers compléments sont `31511b7` (aperçus), `144fd8d` (styles) et `ded55a5` (import autorisé) ; `git log` affiche aussi le complément du catalogue et les dernières vérifications.
 
-Lors de cette livraison, GitHub refuse les envois vers `conceptafrobysyd-alt/Yassdem-Ai-Studio` avec une erreur **403 — accès en écriture refusé**. Les commits restent disponibles localement. Une mise à niveau d’abonnement ne modifie pas les autorisations de ce dépôt. Vérifiez les droits du compte et de la connexion GitHub utilisée pour ce dépôt ; aucun jeton ne doit être envoyé dans le chat ou ajouté aux fichiers.
+Le **22 octobre 2026**, après vérification de l'accès par l'utilisateur, l'envoi de `main` et des huit tags de livraison vers [conceptafrobysyd-alt/Yassdem-Ai-Studio](https://github.com/conceptafrobysyd-alt/Yassdem-Ai-Studio) a réussi. Une lecture des références distantes a confirmé leur correspondance avec les références locales. Le refus HTTP 403 rencontré auparavant est résolu pour cet envoi.
 
-## Récupérer les sauvegardes
+Cette sauvegarde GitHub conserve le code et son historique. Elle ne contient ni la base de projets, ni les médias personnels, ni la configuration secrète de l'instance. Leur sauvegarde reste distincte.
+
+## Récupérer le code depuis GitHub
+
+Ouvrez le dépôt avec le compte GitHub autorisé. Pour récupérer les sources sans installer Git, choisissez **Code → Download ZIP**, puis extrayez l'archive sur votre ordinateur. Sous Windows, ouvrez le dossier extrait qui contient `package.json` et suivez [INSTALLATION_WINDOWS.md](INSTALLATION_WINDOWS.md).
+
+Pour conserver aussi l'historique, utilisez Git depuis une machine autorisée :
+
+```bash
+git clone https://github.com/conceptafrobysyd-alt/Yassdem-Ai-Studio.git
+cd Yassdem-Ai-Studio
+git log --oneline --decorate -5
+git tag --list
+```
+
+La récupération du code ne récupère pas les données privées d'une instance existante.
+
+## Archives complémentaires de l'environnement
 
 Deux artefacts sont préparés hors du dépôt dans l’environnement :
 
@@ -38,7 +55,7 @@ Si GitHub signale que le dépôt contient déjà d’autres commits, récupérez
 
 ## Reprendre dans l’environnement actuel
 
-Une fois les droits corrigés pour la connexion utilisée par cet environnement, les commits sont déjà dans le dépôt de travail :
+Les commits sont déjà dans le dépôt de travail. Pour envoyer une nouvelle étape validée avec la connexion autorisée :
 
 ```bash
 cd /workspace/Yassdem-Ai-Studio

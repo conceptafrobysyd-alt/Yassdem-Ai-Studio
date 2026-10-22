@@ -22,9 +22,17 @@ ffmpeg -hide_banner -encoders | Select-String 'libx264|libx265'
 
 H.264 nécessite `libx264`. H.265 nécessite `libx265` et dépend de la compilation de FFmpeg installée. Vérifiez sa licence avant de redistribuer ses exécutables.
 
+## Récupérer le code
+
+Ouvrez [le dépôt GitHub](https://github.com/conceptafrobysyd-alt/Yassdem-Ai-Studio) avec le compte autorisé, puis choisissez **Code → Download ZIP**. Le code et les tags de livraison y ont été envoyés le 22 octobre 2026.
+
+Dans l'Explorateur Windows, faites un clic droit sur le ZIP et choisissez **Extraire tout**. Ouvrez le dossier extrait qui contient `package.json` et `.env.example` : c'est le dossier du projet. Son nom peut être `Yassdem-Ai-Studio-main`. Pour ouvrir PowerShell dans ce dossier, saisissez `powershell` dans la barre d'adresse de l'Explorateur puis appuyez sur Entrée.
+
+Le téléchargement contient le code. Les projets et médias personnels d'une autre installation, s'ils existent, nécessitent une sauvegarde distincte.
+
 ## Installation de l'application
 
-Ouvrez PowerShell dans le dossier `Yassdem-Ai-Studio`. Les commandes `.cmd` évitent les restrictions PowerShell portant sur les scripts `npm.ps1` sans changer la stratégie d'exécution Windows.
+Ouvrez PowerShell dans le dossier du projet. Les commandes `.cmd` évitent les restrictions PowerShell portant sur les scripts `npm.ps1` sans changer la stratégie d'exécution Windows.
 
 ```powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }

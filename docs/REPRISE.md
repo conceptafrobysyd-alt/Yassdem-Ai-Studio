@@ -14,11 +14,11 @@ Cette consigne s'applique lorsqu'une session de travail reprend. Elle ne program
 - La dernière validation fonctionnelle compte 216 tests réussis, TypeScript, le build et les trois parcours HTTP. Les preuves et limites sont dans [VALIDATION.md](VALIDATION.md) ; ne pas présenter ces résultats historiques comme une nouvelle exécution après une réinitialisation.
 - Aucun appel IA payant n'a été validé. Le budget par défaut est nul. Les modes ComfyUI et Ollama nécessitent encore leurs services et modèles ; les essais réels Runway et Replicate nécessitent une configuration et une confirmation de dépense.
 - L'import produit est implémenté et testé avec transport simulé ; l'accès à une boutique réelle reste à valider dans un environnement réseau compatible.
-- GitHub a refusé les envois avec HTTP 403. Les commits locaux ne sont pas synchronisés sur GitHub. Réessayer après un changement effectif des droits, sans forcer ni modifier l'authentification gérée par la plateforme.
+- Après la réponse « accès GitHub vérifié » du 22 octobre 2026, l'envoi de `main` et des huit tags a réussi. Les références distantes ont été comparées aux références locales. Le refus HTTP 403 est résolu pour cet envoi ; conserver les prochains commits avec des pushes normaux, sans modifier l'authentification gérée par la plateforme.
 
-## Priorité en cours : récupérer la sauvegarde
+## Priorité en cours : installation Windows
 
-L'utilisateur indique ne pas arriver à faire la sauvegarde. Une clarification est en attente : téléchargement depuis le chat, synchronisation GitHub, ou sauvegarde des projets et médias dans l'application. Ne pas considérer cette difficulté comme résolue sans retour de sa part ou preuve de récupération.
+Le code et l'historique sont maintenant sauvegardés sur GitHub. L'utilisateur utilise Windows. Les consignes pour installer Node.js 24 LTS et FFmpeg lui ont été communiquées, mais leur installation sur sa machine n'est pas encore confirmée. La prochaine étape est de télécharger le dépôt depuis GitHub (**Code → Download ZIP**), d'extraire le dossier puis de suivre [INSTALLATION_WINDOWS.md](INSTALLATION_WINDOWS.md). Aucune installation Windows ni récupération par l'utilisateur n'a encore été vérifiée.
 
 Deux archives du code sont présentes hors du dépôt :
 
