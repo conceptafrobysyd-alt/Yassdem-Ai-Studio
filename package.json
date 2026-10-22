@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "6.19.0",
-    "@prisma/client": "6.19.0",
+    "@prisma/client": "7.10.1",
     "archiver": "^7.0.1",
     "clsx": "^2.1.1",
     "concurrently": "^9.2.1",
