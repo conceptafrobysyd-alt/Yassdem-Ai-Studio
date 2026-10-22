@@ -29,6 +29,12 @@ Elles excluent les secrets, la base, les médias personnels et les dépendances.
 
 Pour les projets et médias, le parcours existant est **Paramètres → Sauvegarde → nom du projet**. Il produit un ZIP individuel ; il ne sauvegarde pas le code ni l'instance entière. Les procédures distinctes sont dans [GIT_SYNCHRONISATION.md](GIT_SYNCHRONISATION.md) et [ARCHITECTURE.md](ARCHITECTURE.md).
 
+## Maintenance de sécurité ajoutée
+
+L'utilisateur souhaite prévenir les futurs problèmes de sécurité et ne dispose pas d'une alerte PHP précise. Aucun PHP n'est utilisé par le projet. Les audits npm de production et complets du 22 octobre 2026 n'ont signalé aucune vulnérabilité connue. La commande prévue pour GitHub, `npm audit --package-lock-only --ignore-scripts --audit-level=low`, a aussi réussi localement.
+
+La configuration Dependabot hebdomadaire et le workflow GitHub de contrôle des dépendances sont ajoutés au dépôt ; voir [SECURITE.md](SECURITE.md). Ils ne fusionnent aucune mise à jour et ne mettent pas à jour automatiquement l'installation Windows. L'exécution distante du workflow et les paramètres d'alertes du compte ne sont pas encore vérifiés. Ne pas promettre une sécurité absolue ni prétendre que l'hébergement est audité.
+
 ## Reprendre sans perdre de données
 
 Vérifier les fichiers et services présents avant toute installation ou relance. Conserver `.env`, la base et `storage/`. Ne pas lancer de second worker sur le même stockage. Ne pas supposer que les processus précédents ont survécu à l'interruption. Les réglages cloud préparés doivent encore être enregistrés ou publiés depuis l'interface de configuration ; leur présence en brouillon n'est pas une validation d'une nouvelle tâche.
