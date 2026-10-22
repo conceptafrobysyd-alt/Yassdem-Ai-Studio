@@ -84,6 +84,7 @@ Les tests HTTP nécessitent le build et démarrent leur propre instance avec une
 - [Compléments et aperçus avant export](docs/COMPLEMENTS.md)
 - [Import autorisé de produits Shopify ou JSON](docs/PRODUCT_IMPORT.md)
 - [Sauvegarde Git et synchronisation GitHub](docs/GIT_SYNCHRONISATION.md)
+- [Point de reprise après une interruption](docs/REPRISE.md)
 - [Licences des composants](LICENSES.md)
 
 Les modes IA restent conditionnés à une configuration compatible et à leur validation réelle avec vos services ou comptes fournisseurs. Consultez l'inventaire avant de considérer un élément du cahier des charges comme livré.
