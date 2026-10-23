@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "source": "local",
+  "input": {
+    "productName": "Sac bordeaux — exemple fictif",
+    "brand": "Yassdem Studio",
+    "category": "Accessoires de démonstration",
+    "features": [
+      "Illustration originale de démonstration",
+      "Palette crème et bordeaux",
+      "Vidéo calculée par animation locale"
+    ],
+    "audience": "Découverte du studio",
+    "keywords": [
+      "sac bordeaux",
+      "look minimaliste",
+      "accessoires mode"
+    ],
+    "url": "",
+    "affiliateUrl": "",
+    "adDisclosure": "",
+    "language": "both"
+  },
+  "versions": [
+    {
+      "language": "fr",
+      "titles": [
+        "Sac bordeaux — exemple fictif · Yassdem Studio",
+        "Découvrir Sac bordeaux — exemple fictif",
+        "sac bordeaux : Sac bordeaux — exemple fictif"
+      ],
+      "descriptions": [
+        "Sac bordeaux — exemple fictif · Yassdem Studio. Accessoires de démonstration. Illustration originale de démonstration; Palette crème et bordeaux; Vidéo calculée par animation locale. Pour Découverte du studio.",
+        "Découvrez Sac bordeaux — exemple fictif. Pour Découverte du studio. Détails communiqués : Illustration originale de démonstration; Palette crème et bordeaux; Vidéo calculée par animation locale. Consultez la fiche produit pour les informations complètes."
+      ],
+      "primaryKeyword": "sac bordeaux",
+      "secondaryKeywords": [
+        "look minimaliste",
+        "accessoires mode"
+      ],
+      "cta": "Consulter la fiche produit",
+      "altText": "Sac bordeaux — exemple fictif · Yassdem Studio — Accessoires de démonstration. Illustration originale de démonstration; Palette crème et bordeaux; Vidéo calculée par animation locale.",
+      "board": "Accessoires de démonstration",
+      "adDisclosure": ""
+    },
+    {
+      "language": "en",
+      "titles": [
+        "Sac bordeaux — exemple fictif · Yassdem Studio",
+        "Explore Sac bordeaux — exemple fictif",
+        "sac bordeaux : Sac bordeaux — exemple fictif"
+      ],
+      "descriptions": [
+        "Sac bordeaux — exemple fictif · Yassdem Studio. Accessoires de démonstration. Illustration originale de démonstration; Palette crème et bordeaux; Vidéo calculée par animation locale. For Découverte du studio.",
+        "Discover Sac bordeaux — exemple fictif. For Découverte du studio. Provided details : Illustration originale de démonstration; Palette crème et bordeaux; Vidéo calculée par animation locale. Read the product page for complete information."
+      ],
+      "primaryKeyword": "sac bordeaux",
+      "secondaryKeywords": [
+        "look minimaliste",
+        "accessoires mode"
+      ],
+      "cta": "View product details",
+      "altText": "Sac bordeaux — exemple fictif · Yassdem Studio — Accessoires de démonstration. Illustration originale de démonstration; Palette crème et bordeaux; Vidéo calculée par animation locale.",
+      "board": "Accessoires de démonstration",
+      "adDisclosure": ""
+    }
+  ],
+  "createdAt": "2026-10-23T14:26:06.485Z",
+  "updatedAt": "2026-10-23T14:26:06.485Z"
+}

@@ -6,6 +6,18 @@ Résultats constatés les **19, 20 et 23 octobre 2026** dans l'environnement Lin
 
 La suite complète compte **245 tests réussis dans 14 fichiers** après le correctif d'authentification locale du 23 octobre. TypeScript, la génération des types Next.js et le build de production passent. Le parcours HTTP produit a été réexécuté sans `APP_ORIGIN` explicite : **dix contrôles réussis**, dont les adresses locales et les protections d'origine. Les validations Fashion (trois groupes) et montage/Pinterest (quatre groupes) décrites plus bas datent des étapes précédentes et n'ont pas été réexécutées pour ce correctif.
 
+## Démonstration guidée du 23 octobre
+
+La [visite en français](DEMONSTRATION.md) utilise une instance séparée avec une base et un stockage temporaires. Les illustrations du sac, des vêtements et du logo ainsi que la musique sont des exemples originaux créés pour cette visite. Les projets personnels, la configuration et les données de l'installation existante n'ont pas été modifiés.
+
+Le parcours Chromium couvre les huit écrans : vue d'ensemble, Studio produit, Bibliothèque, Fashion Studio, Lookbook, Éditeur vidéo, Pinterest SEO et Paramètres. La lecture des véritables MP4, l'aperçu d'image avec logo, les profils et variantes, le calcul d'un nouvel aperçu de montage, les contenus FR/EN, les changements de langue et de thème et les téléchargements JSON, CSV et ZIP ont été exercés sans erreur JavaScript observée.
+
+Les fichiers fournis incluent une vidéo produit H.264 de cinq secondes en 720 × 1280, une planche PNG de 1600 × 794, un montage H.264/AAC d'environ six secondes avec texte, musique et logo, sa couverture, les textes Pinterest et une archive de projet. Ce sont des résultats des fonctions locales du studio ; aucune inférence IA réelle n'est revendiquée. Le budget est resté nul, sans demande payante.
+
+La vidéo de visite dure **2 min 37 s**, en 1440 × 1120, avec des légendes françaises, 22 chapitres et une musique originale, sans voix off. Les captures proviennent de l'application réelle. Le pack d'exemples et l'archive de projet passent le contrôle d'intégrité ZIP et ne contiennent ni secret d'instance, ni base SQLite, ni session. Les 15 liens relatifs du guide existent. Cette livraison ajoute uniquement de la documentation et des médias de démonstration ; elle ne réexécute pas la suite de tests ni le build et ne valide pas le parcours Windows de l'utilisateur.
+
+Le MP4 final se lit réellement dans Chromium : durée décodée de 156,684 secondes, progression initiale puis reprise après recherche à 80 et 140 secondes, sans erreur média ni JavaScript. L'état final de l'instance compte deux projets, 16 médias et six tâches réussies, sans échec ni tâche en attente ; dépense et réservation API sont nulles, les fournisseurs payants sont désactivés et aucune génération externe n'a été demandée.
+
 ## Correctif du 23 octobre — Création du compte en local
 
 Le problème Windows a été reproduit avec la vraie classe `NextRequest` : son URL remplace les IP de boucle locale par `localhost`, alors que les en-têtes du navigateur gardent l'IP. Le garde d'origine rejetait donc à tort la création du mot de passe sur `127.0.0.1` sans configuration explicite. Les anciens tests HTTP imposaient `APP_ORIGIN`, ce qui masquait ce cas de première installation.

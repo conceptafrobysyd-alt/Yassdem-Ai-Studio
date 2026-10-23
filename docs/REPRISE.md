@@ -16,7 +16,13 @@ Cette consigne s'applique lorsqu'une session de travail reprend. Elle ne program
 - L'import produit est implémenté et testé avec transport simulé ; l'accès à une boutique réelle reste à valider dans un environnement réseau compatible.
 - Après la réponse « accès GitHub vérifié » du 22 octobre 2026, l'envoi de `main` et des huit tags a réussi. Les références distantes ont été comparées aux références locales. Le refus HTTP 403 est résolu pour cet envoi ; conserver les prochains commits avec des pushes normaux, sans modifier l'authentification gérée par la plateforme.
 
-## Priorité en cours : installation Windows
+## Démonstration demandée par l'utilisateur
+
+La visite est disponible dans [DEMONSTRATION.md](DEMONSTRATION.md), avec une [vidéo de 2 min 37 s](media/demo-yassdem.mp4), neuf captures et un [pack d'exemples](media/exemples-yassdem.zip). Les huit écrans sont présentés en français. Le guide accompagne un premier parcours avec vidéo produit, planche Fashion, montage, Pinterest et sauvegarde. Les fichiers du pack sont des illustrations et une musique originales ; ses résultats ont été réellement produits par les fonctions locales, sans appel IA ni dépense.
+
+L'enregistrement et les téléchargements ont été vérifiés dans Chromium sur une instance séparée, sans toucher aux données personnelles. Voir [VALIDATION.md](VALIDATION.md). Ces fichiers de démonstration sont volontairement versionnés sous `docs/media/` ; les médias personnels restent exclus. Pour livrer les fichiers à l'utilisateur, utiliser les liens du dépôt GitHub plutôt qu'un chemin `/workspace` inaccessible depuis Windows. Les projets filmés ne sont pas automatiquement installés sur son ordinateur : extraire le pack et suivre le guide.
+
+## Installation Windows à confirmer
 
 Le code et l'historique sont sauvegardés sur GitHub. L'utilisateur a récupéré et extrait le ZIP sur Windows. Node.js 24.22.1 et npm 11.19.1 sont reconnus ; FFprobe 9.0.2 a aussi été confirmé après installation de FFmpeg. Le dossier du projet a été retrouvé dans le sous-dossier homonyme issu de l'extraction. Le serveur web et le worker ont démarré sur sa machine.
 

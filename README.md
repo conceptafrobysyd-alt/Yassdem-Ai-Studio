@@ -4,6 +4,10 @@ Studio personnel de création de vidéos produits et de collections fashion. Les
 
 Le parcours local produit de vrais fichiers : vidéo par zoom FFmpeg d'une image fixe et planche de vêtements par assemblage Sharp. Le montage assemble aussi de vrais clips avec coupes, fondus, textes, logo et musique. Ces modes sont sans IA ; la rédaction Pinterest locale utilise des modèles de texte. Les intégrations Runway, Replicate, ComfyUI et Ollama sont implémentées ; aucune génération payante ni inférence avec un modèle externe ou un service IA local réel n'a été validée pour cette livraison.
 
+## Découvrir le studio
+
+La [visite guidée en français](docs/DEMONSTRATION.md) présente les huit écrans et un premier parcours complet. Retrouvez la [démonstration vidéo avec légendes](docs/media/demo-yassdem.mp4) et le [pack d'exemples à télécharger](docs/media/exemples-yassdem.zip). Les illustrations sont fictives ; les vidéos, la planche, le montage et les exports sont réellement produits par les fonctions locales, sans appel IA.
+
 ## Installation rapide
 
 Prérequis : Node.js 22.12 ou ultérieur dans les branches 22 à 24, npm, FFmpeg et FFprobe disponibles dans le `PATH`. Utilisez de préférence Node.js 24 LTS. FFmpeg doit disposer de `libx264` pour H.264 ; `libx265` est nécessaire pour H.265. Aucun GPU n'est nécessaire pour le parcours local.

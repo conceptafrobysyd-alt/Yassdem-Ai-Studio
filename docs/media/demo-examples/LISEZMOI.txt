@@ -1,0 +1,13 @@
+YASSDEM AI STUDIO — FICHIERS DE DÉMONSTRATION
+
+Ces images sont des illustrations vectorielles originales, créées par programme pour les exemples du studio. Elles représentent des objets et vêtements fictifs : ce ne sont pas des photographies de produits réels ni des images de mannequins générées par IA. Aucun essayage virtuel n'est représenté.
+
+Fichiers :
+- sac-produit.png : illustration de produit sur fond crème, 1000 × 1250 pixels.
+- haut.png, pantalon.png, accessoire.png : illustrations isolées sur fond transparent, 1000 × 1250 pixels.
+- logo-yassdem.png : monogramme YS transparent, 768 × 768 pixels.
+- musique-demo.wav : courte composition synthétique originale, mono PCM 16 bits, 22050 Hz, durée 10 secondes. Aucun enregistrement, échantillon ou morceau tiers n'a été utilisé.
+
+Utilisation prévue : essais et démonstrations de Yassdem AI Studio. Les exemples peuvent être importés dans la médiathèque ; la musique sert au montage avec la confirmation des droits. Ces fichiers ne déclenchent aucun appel IA ni aucune dépense.
+
+L'animation locale d'une illustration est un mouvement de caméra FFmpeg. La planche locale assemble les vêtements ; elle ne les fait pas porter par un mannequin.
