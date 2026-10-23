@@ -5,6 +5,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { request as httpRequest } from 'node:http';
 import {
   spawn,
   execFile as execFileCallback,
@@ -23,7 +24,8 @@ async function main() {
     ...process.env,
     DATABASE_URL: `file:${path.join(directory, 'test.db')}`,
     STORAGE_DIR: path.join(directory, 'storage'),
-    APP_ORIGIN: origin,
+    // Exercise the default local installation, without an explicit deployment origin.
+    APP_ORIGIN: '',
     RUNWAY_API_KEY: '',
     NODE_ENV: process.env.SMOKE_DEV
       ? ('development' as const)
@@ -93,6 +95,32 @@ async function main() {
     );
     return data;
   }
+  // Node fetch derives Host from its URL, so use the native HTTP transport for
+  // deliberate Host/Origin combinations against the isolated local listener.
+  async function probeSetup(headers: Record<string, string>) {
+    return new Promise<{ status: number; errorCode?: string }>((resolve, reject) => {
+      const probe = httpRequest(
+        origin + '/api/auth/setup',
+        { method: 'POST', headers: { ...headers, 'content-type': 'application/json' } },
+        (response) => {
+          const chunks: Buffer[] = [];
+          response.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+          response.on('error', reject);
+          response.on('end', () => {
+            try {
+              const body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+              resolve({ status: response.statusCode ?? 0, errorCode: body.error?.code });
+            } catch (error) {
+              reject(error);
+            }
+          });
+        },
+      );
+      probe.on('error', reject);
+      probe.setTimeout(10000, () => probe.destroy(new Error('Origin probe timed out')));
+      probe.end(JSON.stringify({ password: 'too-short' }));
+    });
+  }
   async function startup() {
     const child = launch([
       'node_modules/next/dist/bin/next',
@@ -155,6 +183,23 @@ async function main() {
     assert.equal(initial.needsSetup, true);
     assert.equal(initial.authenticated, false);
     assert.equal((await request('/api/projects', {}, true)).status, 401);
+    for (const localHost of ['127.0.0.1', 'localhost', '[::1]']) {
+      const host = `${localHost}:${port}`;
+      const localSetup = await probeSetup({ host, origin: `http://${host}` });
+      assert.equal(localSetup.status, 400, `Local setup rejected ${host}`);
+      assert.equal(localSetup.errorCode, 'PASSWORD_LENGTH');
+    }
+    for (const headers of [
+      { host: `localhost:${port}`, origin },
+      { host: `127.0.0.1:${port}`, origin: `http://127.0.0.1:${port + 1}` },
+      { host: `127.0.0.1:${port}`, origin: `https://127.0.0.1:${port}` },
+      { host: `untrusted.example:${port}`, origin: `http://untrusted.example:${port}` },
+    ]) {
+      const rejected = await probeSetup(headers);
+      assert.equal(rejected.status, 403);
+      assert.equal(rejected.errorCode, 'INVALID_ORIGIN');
+    }
+    passed('default local setup aliases and strict origin, Host, protocol and port checks');
     const hostile = await fetch(origin + '/api/auth/setup', {
       method: 'POST',
       headers: {

@@ -65,6 +65,18 @@ Conservez un dossier de stockage accessible en écriture. Ne synchronisez pas un
 
 ## Utilisation et dépannage
 
+### Création du mot de passe refusée avec HTTP 403
+
+Les versions antérieures au correctif du 23 octobre 2026 pouvaient afficher « Vérifiez les champs renseignés » en ouvrant le studio avec l'adresse IP locale `127.0.0.1`. Next.js normalisait cette adresse en `localhost` dans son URL interne, ce qui déclenchait à tort le contrôle d'origine.
+
+Pour continuer avec une copie ancienne, remplacez `127.0.0.1` par `localhost` dans l'adresse du navigateur, en conservant le port annoncé par le terminal. Réessayez ensuite la création du mot de passe. Ce contournement suppose la configuration locale par défaut, sans `APP_ORIGIN` explicite.
+
+La version corrigée accepte les adresses locales autorisées lorsqu'Origin et Host correspondent exactement, avec le même protocole et le même port. Elle affiche un message propre aux erreurs d'adresse. Une éventuelle valeur `APP_ORIGIN` reste stricte et doit correspondre à l'adresse réellement utilisée. La première création du mot de passe reste locale.
+
+Conservez votre `.env`, la base `prisma/studio.db` et le dossier `storage/` lors d'une mise à jour du code. Ne supprimez pas les données pour résoudre une erreur d'adresse.
+
+### Démarrage et exports
+
 Pour démarrer une version compilée : `npm.cmd run build`, puis `npm.cmd start`. Après un redémarrage de Windows, revenez dans le dossier du projet et relancez la commande souhaitée. Vos projets restent dans la base SQLite et les fichiers dans le stockage local.
 
 Si l'encodage échoue, vérifiez d'abord FFmpeg, FFprobe et l'encodeur demandé. Essayez 720p H.264 pour vérifier le parcours sur une machine peu puissante. Le 2160p et H.265 demandent davantage de temps CPU et de mémoire. Aucun GPU dédié ni modèle IA local n'est requis pour l'animation d'une image fixe, le montage vidéo ou la rédaction Pinterest par modèles de texte. Les textes du montage nécessitent le filtre `drawtext` de FFmpeg et une police locale accessible.

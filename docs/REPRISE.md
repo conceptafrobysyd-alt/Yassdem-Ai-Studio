@@ -1,6 +1,6 @@
 # Point de reprise
 
-Dernière mise à jour : 22 octobre 2026.
+Dernière mise à jour : 23 octobre 2026.
 
 ## Consigne de continuité
 
@@ -10,15 +10,17 @@ Cette consigne s'applique lorsqu'une session de travail reprend. Elle ne program
 
 ## État conservé
 
-- Les phases 1 à 5 et quatre compléments sont enregistrés dans Git. Le dernier commit fonctionnel est `3eb9d66` : catalogue des modèles et fournisseurs vidéo compatibles. Les tags `phase-*` et `complement-*` repèrent les étapes.
-- La dernière validation fonctionnelle compte 216 tests réussis, TypeScript, le build et les trois parcours HTTP. Les preuves et limites sont dans [VALIDATION.md](VALIDATION.md) ; ne pas présenter ces résultats historiques comme une nouvelle exécution après une réinitialisation.
+- Les phases 1 à 5 et quatre compléments sont enregistrés dans Git. `3eb9d66` correspond au catalogue des modèles et fournisseurs vidéo compatibles. Le correctif fonctionnel du 23 octobre porte sur les adresses locales de première connexion ; `git log` donne les derniers commits. Les tags `phase-*` et `complement-*` repèrent les étapes de livraison initiales.
+- La dernière validation fonctionnelle compte 245 tests réussis, TypeScript et le build. Le parcours HTTP produit a repassé dix contrôles sans `APP_ORIGIN` explicite ; les résultats Fashion et montage/Pinterest datent des étapes précédentes. Chromium a aussi validé la création du compte via l'IP locale et la connexion via localhost. Les preuves et limites sont dans [VALIDATION.md](VALIDATION.md) ; ne pas présenter ces résultats historiques comme une nouvelle exécution après une réinitialisation.
 - Aucun appel IA payant n'a été validé. Le budget par défaut est nul. Les modes ComfyUI et Ollama nécessitent encore leurs services et modèles ; les essais réels Runway et Replicate nécessitent une configuration et une confirmation de dépense.
 - L'import produit est implémenté et testé avec transport simulé ; l'accès à une boutique réelle reste à valider dans un environnement réseau compatible.
 - Après la réponse « accès GitHub vérifié » du 22 octobre 2026, l'envoi de `main` et des huit tags a réussi. Les références distantes ont été comparées aux références locales. Le refus HTTP 403 est résolu pour cet envoi ; conserver les prochains commits avec des pushes normaux, sans modifier l'authentification gérée par la plateforme.
 
 ## Priorité en cours : installation Windows
 
-Le code et l'historique sont maintenant sauvegardés sur GitHub. L'utilisateur utilise Windows. Les consignes pour installer Node.js 24 LTS et FFmpeg lui ont été communiquées, mais leur installation sur sa machine n'est pas encore confirmée. La prochaine étape est de télécharger le dépôt depuis GitHub (**Code → Download ZIP**), d'extraire le dossier puis de suivre [INSTALLATION_WINDOWS.md](INSTALLATION_WINDOWS.md). Aucune installation Windows ni récupération par l'utilisateur n'a encore été vérifiée.
+Le code et l'historique sont sauvegardés sur GitHub. L'utilisateur a récupéré et extrait le ZIP sur Windows. Node.js 24.22.1 et npm 11.19.1 sont reconnus ; FFprobe 9.0.2 a aussi été confirmé après installation de FFmpeg. Le dossier du projet a été retrouvé dans le sous-dossier homonyme issu de l'extraction. Le serveur web et le worker ont démarré sur sa machine.
+
+La création du mot de passe sur l'adresse IP locale a ensuite échoué avec HTTP 403 et le message générique « Vérifiez les champs renseignés ». Le défaut a été reproduit : NextRequest normalise l'IP locale en `localhost` tout en conservant les en-têtes Origin/Host du navigateur. Le contournement communiqué est d'utiliser `localhost` avec le même port dans le navigateur Windows. Le succès de la création du mot de passe et le premier parcours sur son ordinateur restent à confirmer. Le correctif durable, ses limites et les données à préserver sont décrits dans [INSTALLATION_WINDOWS.md](INSTALLATION_WINDOWS.md).
 
 Deux archives du code sont présentes hors du dépôt :
 

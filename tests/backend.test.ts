@@ -10,7 +10,7 @@ import {
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
 
 vi.mock('@/lib/db', () => ({
@@ -33,6 +33,7 @@ import {
 } from '@/lib/auth';
 import { resolveMediaPath, uploadMedia } from '@/lib/media';
 import { publicSettings } from '@/lib/settings';
+import { POST as setupStudio } from '@/app/api/auth/setup/route';
 import type { Settings } from '@prisma/client';
 
 let temporary = '';
@@ -116,6 +117,162 @@ describe('bounded JSON parsing', () => {
 });
 
 describe('private API security', () => {
+  it.each(['localhost', '127.0.0.1', '[::1]'])(
+    'accepts matching browser headers for %s after NextRequest normalizes the URL',
+    (hostname) => {
+      delete process.env.APP_ORIGIN;
+      const browserOrigin = `http://${hostname}:3000`;
+      const request = new NextRequest(`${browserOrigin}/api/auth/setup`, {
+        method: 'POST',
+        headers: { origin: browserOrigin, host: `${hostname}:3000` },
+      });
+      expect(new URL(request.url).hostname).toBe('localhost');
+      expect(request.headers.get('origin')).toBe(browserOrigin);
+      expect(() => assertSameOrigin(request)).not.toThrow();
+    },
+  );
+  it('accepts a matching local origin on a different port and protocol', () => {
+    delete process.env.APP_ORIGIN;
+    const request = new NextRequest('https://127.0.0.1:3443/api/settings', {
+      method: 'PATCH',
+      headers: {
+        origin: 'https://127.0.0.1:3443',
+        host: '127.0.0.1:3443',
+      },
+    });
+    expect(() => assertSameOrigin(request)).not.toThrow();
+  });
+  it.each([
+    {
+      scenario: 'foreign origin',
+      url: 'http://127.0.0.1:3000',
+      host: '127.0.0.1:3000',
+      origin: 'https://attacker.example',
+    },
+    {
+      scenario: 'different loopback aliases in Host and Origin',
+      url: 'http://127.0.0.1:3000',
+      host: '127.0.0.1:3000',
+      origin: 'http://localhost:3000',
+    },
+    {
+      scenario: 'different browser origin port',
+      url: 'http://127.0.0.1:3000',
+      host: '127.0.0.1:3000',
+      origin: 'http://127.0.0.1:3001',
+    },
+    {
+      scenario: 'matching Host and Origin on a different server port',
+      url: 'http://127.0.0.1:3000',
+      host: '127.0.0.1:3001',
+      origin: 'http://127.0.0.1:3001',
+    },
+    {
+      scenario: 'different browser origin protocol',
+      url: 'http://127.0.0.1:3000',
+      host: '127.0.0.1:3000',
+      origin: 'https://127.0.0.1:3000',
+    },
+    {
+      scenario: 'external Host with matching Origin',
+      url: 'http://127.0.0.1:3000',
+      host: 'attacker.example:3000',
+      origin: 'http://attacker.example:3000',
+    },
+    {
+      scenario: 'external request URL with local browser headers',
+      url: 'http://attacker.example:3000',
+      host: '127.0.0.1:3000',
+      origin: 'http://127.0.0.1:3000',
+    },
+    {
+      scenario: 'unlisted loopback address normalized by NextRequest',
+      url: 'http://127.0.0.2:3000',
+      host: '127.0.0.2:3000',
+      origin: 'http://127.0.0.2:3000',
+    },
+  ])('rejects $scenario with a real NextRequest', ({ url, host, origin }) => {
+    delete process.env.APP_ORIGIN;
+    const request = new NextRequest(`${url}/api/auth/setup`, {
+      method: 'POST',
+      headers: { host, origin },
+    });
+    expect(() => assertSameOrigin(request)).toThrow(ApiError);
+  });
+  it.each([
+    'user@localhost:3000',
+    'localhost:3000/path',
+    'localhost:3000?query',
+    'localhost:3000#fragment',
+    'http://localhost:3000',
+    'localhost:not-a-port',
+    '::1:3000',
+    '',
+  ])('rejects malformed Host %j with a controlled API error', (host) => {
+    delete process.env.APP_ORIGIN;
+    const request = new NextRequest('http://localhost:3000/api/auth/setup', {
+      method: 'POST',
+      headers: { host, origin: 'http://localhost:3000' },
+    });
+    expect(() => assertSameOrigin(request)).toThrow(ApiError);
+  });
+  it('rejects a browser mutation without an Origin header', () => {
+    delete process.env.APP_ORIGIN;
+    const request = new NextRequest('http://127.0.0.1:3000/api/auth/setup', {
+      method: 'POST',
+      headers: { host: '127.0.0.1:3000' },
+    });
+    expect(() => assertSameOrigin(request)).toThrow(ApiError);
+  });
+  it.each(['localhost', '127.0.0.1', '[::1]'])(
+    'uses an explicit %s APP_ORIGIN despite NextRequest URL normalization',
+    (hostname) => {
+      const browserOrigin = `http://${hostname}:3000`;
+      process.env.APP_ORIGIN = browserOrigin;
+      const request = new NextRequest(`${browserOrigin}/api/auth/setup`, {
+        method: 'POST',
+        headers: { origin: browserOrigin, host: `${hostname}:3000` },
+      });
+      expect(() => assertSameOrigin(request)).not.toThrow();
+    },
+  );
+  it.each([
+    ['http://localhost:3000', '127.0.0.1:3000'],
+    ['http://127.0.0.1:3000', 'localhost:3000'],
+    ['http://localhost:3000', '[::1]:3000'],
+  ])('keeps explicit origin %s strict against browser Host %s', (expected, host) => {
+    process.env.APP_ORIGIN = expected;
+    const request = new NextRequest(`http://${host}/api/auth/setup`, {
+      method: 'POST',
+      headers: { origin: `http://${host}`, host },
+    });
+    expect(() => assertSameOrigin(request)).toThrow(ApiError);
+  });
+  it('preserves an explicit HTTPS deployment origin behind an internal local URL', () => {
+    process.env.APP_ORIGIN = 'https://studio.example';
+    const request = new NextRequest('http://127.0.0.1:3000/api/settings', {
+      method: 'PATCH',
+      headers: { origin: 'https://studio.example', host: 'studio.example' },
+    });
+    expect(() => assertSameOrigin(request)).not.toThrow();
+  });
+  it('keeps first-use setup local when a public origin proxies to an internal local URL', async () => {
+    process.env.APP_ORIGIN = 'https://studio.example';
+    const request = new NextRequest('http://127.0.0.1:3000/api/auth/setup', {
+      method: 'POST',
+      headers: {
+        origin: 'https://studio.example',
+        host: 'studio.example',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ password: 'short' }),
+    });
+    const response = await setupStudio(request);
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({
+      error: { code: 'SETUP_LOCAL_ONLY' },
+    });
+  });
   it('rejects cross-origin mutations and DNS rebinding by default', () => {
     delete process.env.APP_ORIGIN;
     expect(() =>

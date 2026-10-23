@@ -299,6 +299,10 @@ const en = {
   authPrivacy: 'Private access · API keys stay on the server',
   errorGeneric: 'This action failed. Please try again in a moment.',
   errorNetwork: 'Unable to connect to the server. Check your connection.',
+  errorOrigin:
+    'This page address is not authorized. Open the studio using its startup address.',
+  errorSetupLocal:
+    'Create your password from the studio’s local address on this computer.',
   errorUnauthorized: 'Your session has expired. Please sign in again.',
   errorPassword: 'Incorrect password.',
   errorValidation: 'Check the values you entered.',

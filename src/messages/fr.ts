@@ -306,6 +306,10 @@ const fr = {
   authPrivacy: 'Accès privé · clés API conservées côté serveur',
   errorGeneric: 'L’opération a échoué. Réessayez dans un instant.',
   errorNetwork: 'Connexion au serveur impossible. Vérifiez votre connexion.',
+  errorOrigin:
+    'L’adresse de cette page n’est pas autorisée. Ouvrez le studio avec son adresse de démarrage.',
+  errorSetupLocal:
+    'Créez votre mot de passe depuis l’adresse locale du studio sur cet ordinateur.',
   errorUnauthorized: 'Votre session a expiré. Reconnectez-vous.',
   errorPassword: 'Mot de passe incorrect.',
   errorValidation: 'Vérifiez les champs renseignés.',

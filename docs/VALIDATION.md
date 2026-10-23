@@ -1,10 +1,22 @@
 # Validation
 
-Résultats constatés les **19 et 20 octobre 2026** dans l'environnement Linux cloud, avec vérification dans un navigateur réel. Les tests payants Runway n'ont pas été exécutés. L'installation sous Windows et macOS n'a pas été testée.
+Résultats constatés les **19, 20 et 23 octobre 2026** dans l'environnement Linux cloud, avec vérification dans un navigateur réel. Les tests payants Runway n'ont pas été exécutés. Le premier démarrage Windows a été rapporté par l'utilisateur ; le parcours complet sur sa machine et l'installation macOS ne sont pas encore validés.
 
 ## État actuel après les compléments
 
-La suite complète compte **216 tests réussis dans 14 fichiers**. TypeScript, la génération des types Next.js et le build de production passent. Les trois parcours HTTP passent : neuf contrôles produit, trois groupes Fashion et quatre groupes montage/Pinterest, incluant le vrai rendu d’aperçu avant export final.
+La suite complète compte **245 tests réussis dans 14 fichiers** après le correctif d'authentification locale du 23 octobre. TypeScript, la génération des types Next.js et le build de production passent. Le parcours HTTP produit a été réexécuté sans `APP_ORIGIN` explicite : **dix contrôles réussis**, dont les adresses locales et les protections d'origine. Les validations Fashion (trois groupes) et montage/Pinterest (quatre groupes) décrites plus bas datent des étapes précédentes et n'ont pas été réexécutées pour ce correctif.
+
+## Correctif du 23 octobre — Création du compte en local
+
+Le problème Windows a été reproduit avec la vraie classe `NextRequest` : son URL remplace les IP de boucle locale par `localhost`, alors que les en-têtes du navigateur gardent l'IP. Le garde d'origine rejetait donc à tort la création du mot de passe sur `127.0.0.1` sans configuration explicite. Les anciens tests HTTP imposaient `APP_ORIGIN`, ce qui masquait ce cas de première installation.
+
+Avant correction, le parcours HTTP sans cette variable échouait réellement avec HTTP 403 sur l'IP locale, et cinq des nouveaux tests ciblés étaient en échec. Après correction, les **42 tests backend**, dont **29 régressions ajoutées**, réussissent. Ils couvrent les IP et noms locaux normalisés, les ports et protocoles, les hôtes malformés ou étrangers, les origines absentes, la configuration explicite stricte et le refus d'une première configuration publique même derrière une URL serveur locale.
+
+Le parcours HTTP complet réussit ses dix contrôles avec la configuration locale par défaut, y compris création du mot de passe, session, écritures privées, export réel 3840 × 2160 et redémarrage. Les sondes d'en-têtes utilisent le transport natif `node:http` : le `fetch` de Node ignore une surcharge de Host et ne permettait pas de simuler fidèlement ces requêtes. Les hôtes étrangers et mélanges d'origine, port ou protocole restent refusés.
+
+Dans Chromium, une vraie création de compte en français via `127.0.0.1` puis une vraie connexion en anglais via `localhost` réussissent, avec cookie HttpOnly/SameSite strict et sans erreur JavaScript. Les nouveaux messages d'adresse FR/EN ont été vérifiés avec une réponse 403 contrôlée ; le refus réel des requêtes non autorisées est vérifié séparément par les tests HTTP. Ces essais utilisent une base et un stockage temporaires, sans appel payant. Ils ne constituent pas une validation sur l'ordinateur Windows de l'utilisateur.
+
+## Vérifications antérieures des compléments
 
 Une copie des sources sans `.next` ni `next-env.d.ts` a aussi passé `npm run typecheck`, en réutilisant les dépendances verrouillées installées. La commande a régénéré les déclarations Next.js nécessaires. Ce contrôle ne constitue pas une publication du cloud ni une restauration dans une nouvelle tâche.
 

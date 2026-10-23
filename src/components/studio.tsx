@@ -394,6 +394,8 @@ function StudioApp({
           ? error
           : 'UNKNOWN';
     if (code === 'NETWORK') return t('errorNetwork');
+    if (code === 'INVALID_ORIGIN') return t('errorOrigin');
+    if (code === 'SETUP_LOCAL_ONLY') return t('errorSetupLocal');
     if (/UNSAFE_SVG_LOGO|SVG_LOGO_TOO_LARGE|SVG_LOGO_ONLY/.test(code))
       return t('errorSvg');
     if (/UNAUTH|SESSION|AUTH_REQUIRED/.test(code))

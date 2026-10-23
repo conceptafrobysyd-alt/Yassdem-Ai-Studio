@@ -15,7 +15,9 @@ export async function POST(request: Request) {
     async () => {
       if (
         !['localhost', '127.0.0.1', '[::1]'].includes(
-          new URL(request.url).hostname,
+          // api() has already validated Origin against Host. NextRequest's URL
+          // may describe the local listener even for a configured public origin.
+          new URL(request.headers.get('origin') || request.url).hostname,
         )
       )
         throw new ApiError(

@@ -13,15 +13,34 @@ export class ApiError extends Error {
 }
 
 export function assertSameOrigin(request: Request) {
-  const expected = process.env.APP_ORIGIN || new URL(request.url).origin;
+  const requestUrl = new URL(request.url);
+  const configuredOrigin = process.env.APP_ORIGIN;
+  const localHosts = ['localhost', '127.0.0.1', '[::1]'];
+  const host = request.headers.get('host') ?? requestUrl.host;
+  let expected = configuredOrigin || requestUrl.origin;
+
+  // NextRequest normalizes loopback IPs to localhost in request.url, but keeps
+  // the browser's Host and Origin. Accept that local alias only when its exact
+  // Host, port and protocol still match the browser origin below.
+  if (!configuredOrigin && localHosts.includes(requestUrl.hostname)) {
+    try {
+      const localUrl = new URL(`${requestUrl.protocol}//${host}`);
+      if (
+        localHosts.includes(localUrl.hostname) &&
+        localUrl.host === host &&
+        localUrl.port === requestUrl.port
+      )
+        expected = localUrl.origin;
+    } catch {
+      // A malformed Host is rejected by the strict comparison below.
+    }
+  }
+
   const origin = request.headers.get('origin');
   const expectedUrl = new URL(expected);
-  const host = request.headers.get('host') || new URL(request.url).host;
-  const localHost = ['localhost', '127.0.0.1', '[::1]'].includes(
-    expectedUrl.hostname,
-  );
+  const localHost = localHosts.includes(expectedUrl.hostname);
   if (
-    (!process.env.APP_ORIGIN && !localHost) ||
+    (!configuredOrigin && !localHost) ||
     !origin ||
     origin !== expected ||
     host !== expectedUrl.host
