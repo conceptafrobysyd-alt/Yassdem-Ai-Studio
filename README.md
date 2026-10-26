@@ -1,10 +1,12 @@
 # Yassdem AI Studio
 
-Studio personnel de création de vidéos produits et de collections fashion. Les phases 1 à 5 apportent les projets, la médiathèque, les paramètres, l'animation locale d'une photo, l'adaptateur Runway, les exports MP4, les profils de mannequins, la composition de looks, le montage de plusieurs clips, la préparation des textes Pinterest et les adaptateurs fournisseurs supplémentaires. L'interface propose le français et l'anglais.
+Studio personnel de création de contenus UGC, d'affiliation, de fictions et de vidéos YouTube, avec ateliers produit et fashion. Les phases 1 à 5 apportent les projets, la médiathèque, les paramètres, l'animation locale d'une photo, l'adaptateur Runway, les exports MP4, les profils de mannequins, la composition de looks, le montage de plusieurs clips, la préparation des textes Pinterest et les adaptateurs fournisseurs supplémentaires. L'interface propose le français et l'anglais.
 
 Le parcours local produit de vrais fichiers : vidéo par zoom FFmpeg d'une image fixe et planche de vêtements par assemblage Sharp. Le montage assemble aussi de vrais clips avec coupes, fondus, textes, logo et musique. Ces modes sont sans IA ; la rédaction Pinterest locale utilise des modèles de texte. Les intégrations Runway, Replicate, ComfyUI et Ollama sont implémentées ; aucune génération payante ni inférence avec un modèle externe ou un service IA local réel n'a été validée pour cette livraison.
 
 ## Découvrir le studio
+
+Le [studio de contenus](docs/CREATION_CONTENUS.md) propose quatre parcours : UGC, affiliation, histoires/dramas et YouTube. Préparez un scénario, choisissez vos visuels, validez puis créez un vrai montage avec voix facultative, sous-titres, logo et musique. Une version courte YouTube et l'épisode suivant restent des propositions à relire. Les voix dépendent des moteurs et langues disponibles ; sans visuels fournis, les scènes utilisent des cartons texte. Cette application personnelle n'est pas un service multi-clients ; voir le [positionnement commercial proposé](docs/POSITIONNEMENT_COMMERCIAL.md).
 
 L'accueil propose maintenant une [création rapide](docs/CREATION_RAPIDE.md) : importez une photo, puis lancez directement la vidéo ou préparez une image avec votre logo. Le projet vidéo est créé automatiquement. La photo avec mannequin devient disponible lorsqu'un moteur IA local compatible est prêt. La [sélection d'outils gratuits sur GitHub](docs/OUTILS_GRATUITS.md) précise les licences, les besoins matériels et les possibilités d'intégration.
 

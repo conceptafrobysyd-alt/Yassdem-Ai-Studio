@@ -1,4 +1,19 @@
 const fr = {
+  downloadFile: 'Télécharger le fichier',
+  creator: 'Création de contenus',
+  creatorDescription: 'Votre idée, votre scénario, votre vidéo.',
+  creatorChooseGoal: 'Choisir mon contenu',
+  creatorGoal_ugc: 'UGC produit',
+  creatorGoal_affiliate: 'Affiliation',
+  creatorGoal_story: 'Histoires et dramas',
+  creatorGoal_youtube: 'YouTube',
+  creatorGoalDescription_ugc: 'Présentez et montrez votre produit.',
+  creatorGoalDescription_affiliate:
+    'Préparez une vidéo et ses textes affiliés.',
+  creatorGoalDescription_story:
+    'Imaginez une mini-série, épisode après épisode.',
+  creatorGoalDescription_youtube:
+    'Structurez une vidéo courte ou jusqu’à dix minutes.',
   advancedCreation: 'Création avancée',
   quickModelSetupTitle: 'Activer la photo avec mannequin',
   quickModelSetupDescription:
@@ -59,7 +74,7 @@ const fr = {
   private: 'Espace privé',
   local: 'Vos créations, votre univers.',
   greeting: 'Que voulez-vous créer ?',
-  intro: 'Importez une photo, puis choisissez votre résultat.',
+  intro: 'Choisissez votre contenu ou partez simplement d’une photo.',
   newProject: 'Nouveau projet',
   productVideo: 'Vidéo produit',
   heroEyebrow: 'DE L’IDÉE AU MOUVEMENT',

@@ -1,4 +1,17 @@
 const en = {
+  downloadFile: 'Download file',
+  creator: 'Content creation',
+  creatorDescription: 'Your idea, your script, your video.',
+  creatorChooseGoal: 'Choose my content',
+  creatorGoal_ugc: 'Product UGC',
+  creatorGoal_affiliate: 'Affiliate content',
+  creatorGoal_story: 'Stories and dramas',
+  creatorGoal_youtube: 'YouTube',
+  creatorGoalDescription_ugc: 'Present and demonstrate your product.',
+  creatorGoalDescription_affiliate: 'Prepare an affiliate video and its copy.',
+  creatorGoalDescription_story: 'Build a mini-series, episode by episode.',
+  creatorGoalDescription_youtube:
+    'Structure a short video or up to ten minutes.',
   advancedCreation: 'Advanced creation',
   quickModelSetupTitle: 'Enable photos with a model',
   quickModelSetupDescription:
@@ -55,7 +68,7 @@ const en = {
   private: 'Private workspace',
   local: 'Your creations, your world.',
   greeting: 'What would you like to create?',
-  intro: 'Upload a photo, then choose your result.',
+  intro: 'Choose your content or start with a photo.',
   newProject: 'New project',
   productVideo: 'Product video',
   heroEyebrow: 'FROM IDEA TO MOTION',

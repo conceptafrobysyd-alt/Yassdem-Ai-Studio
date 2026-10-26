@@ -20,6 +20,7 @@ import {
   Copy,
   Download,
   Film,
+  FileText,
   FolderOpen,
   Globe2,
   ImagePlus,
@@ -67,6 +68,9 @@ import { StylePresetsPanel } from './style-presets-panel';
 import { ProductImportPanel } from './product-import-panel';
 import { ModelCatalogPanel } from './model-catalog-panel';
 import { QuickCreatePanel } from './quick-create-panel';
+import { CreatorStudio } from './creator-studio';
+import type { CreatorMode } from '@/lib/creator-script';
+import './creator-goals.css';
 import fr from '@/messages/fr';
 import en from '@/messages/en';
 type Locale = 'fr' | 'en';
@@ -326,6 +330,9 @@ function StudioApp({
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [settings, setSettings] = useState<Settings>(defaults);
   const [page, setPage] = useState('dashboard');
+  const [creatorMode, setCreatorMode] = useState<CreatorMode>('ugc');
+  const [creatorProjectId, setCreatorProjectId] = useState('');
+  const [creatorStartToken, setCreatorStartToken] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedId, setSelectedId] = useState('');
   const [parameters, setParameters] = useState<Parameters>(
@@ -477,6 +484,12 @@ function StudioApp({
   }
   function openProject(p: Project) {
     setSelectedId(p.id);
+    if (p.parameters.creator) {
+      setCreatorProjectId(p.id);
+      setCreatorStartToken((value) => value + 1);
+      navigate('creator');
+      return;
+    }
     setParameters({
       ...baseParameters(settings),
       ...p.parameters,
@@ -664,9 +677,11 @@ function StudioApp({
                     ? 'lookbookDescription'
                     : page === 'editor'
                       ? 'editorDescription'
-                      : page === 'seo'
-                        ? 'seoDescription'
-                        : 'settingsDescription',
+                      : page === 'creator'
+                        ? 'creatorDescription'
+                        : page === 'seo'
+                          ? 'seoDescription'
+                          : 'settingsDescription',
             );
   return (
     <div className="app-shell">
@@ -704,6 +719,7 @@ function StudioApp({
         <nav aria-label={t('nav')}>
           {[
             { id: 'dashboard', icon: LayoutDashboard },
+            { id: 'creator', icon: Sparkles },
             { id: 'studio', icon: Clapperboard },
             { id: 'library', icon: FolderOpen },
             { id: 'fashion', icon: Shirt },
@@ -849,7 +865,7 @@ function StudioApp({
                   <Check size={16} />
                   {t('saveProject')}
                 </Button>
-              ) : ['fashion', 'lookbook', 'editor', 'seo'].includes(
+              ) : ['fashion', 'lookbook', 'editor', 'seo', 'creator'].includes(
                   page,
                 ) ? null : (
                 <Button
@@ -861,6 +877,64 @@ function StudioApp({
                 </Button>
               )}
             </div>
+          </div>
+          {page === 'dashboard' && (
+            <section
+              className="creator-goals"
+              aria-label={t('creatorChooseGoal')}
+            >
+              {(
+                [
+                  ['ugc', Clapperboard],
+                  ['affiliate', ArrowUpRight],
+                  ['story', Sparkles],
+                  ['youtube', Film],
+                ] as const
+              ).map(([mode, Icon]) => (
+                <button
+                  type="button"
+                  key={mode}
+                  className="creator-goal"
+                  onClick={() => {
+                    setCreatorMode(mode);
+                    setCreatorProjectId('');
+                    setCreatorStartToken((value) => value + 1);
+                    navigate('creator');
+                  }}
+                >
+                  <Icon size={22} />
+                  <strong>{t(`creatorGoal_${mode}`)}</strong>
+                  <span>{t(`creatorGoalDescription_${mode}`)}</span>
+                  <ArrowRight size={16} />
+                </button>
+              ))}
+            </section>
+          )}
+          <div hidden={page !== 'creator'}>
+            <CreatorStudio
+              locale={locale}
+              media={media}
+              jobs={jobs}
+              initialProjectId={creatorProjectId}
+              initialMode={creatorMode}
+              startToken={creatorStartToken}
+              onRefresh={reload}
+              onQueued={(job) => {
+                setSnapshot((current) =>
+                  current
+                    ? {
+                        ...current,
+                        jobs: [
+                          job,
+                          ...(current.jobs || []).filter(
+                            (item) => item.id !== job.id,
+                          ),
+                        ],
+                      }
+                    : current,
+                );
+              }}
+            />
           </div>
           <div hidden={page !== 'dashboard'}>
             <QuickCreatePanel
@@ -1947,15 +2021,22 @@ function StudioApp({
                               preload="metadata"
                               style={{ width: '90%' }}
                             />
-                          ) : (
+                          ) : item.mimeType.startsWith('image/') ? (
                             <img src={item.url} alt={item.name} />
+                          ) : (
+                            <a className="text-link" href={item.url} download>
+                              <FileText size={27} />
+                              {t('downloadFile')}
+                            </a>
                           )}
                           <Badge>
-                            {item.role === 'LOGO'
-                              ? t('logo')
-                              : item.mimeType.startsWith('video/')
-                                ? 'MP4'
-                                : item.mimeType.split('/')[1].toUpperCase()}
+                            {item.role === 'SUBTITLE'
+                              ? 'SRT'
+                              : item.role === 'LOGO'
+                                ? t('logo')
+                                : item.mimeType.startsWith('video/')
+                                  ? 'MP4'
+                                  : item.mimeType.split('/')[1].toUpperCase()}
                           </Badge>
                           <button
                             className="media-delete"

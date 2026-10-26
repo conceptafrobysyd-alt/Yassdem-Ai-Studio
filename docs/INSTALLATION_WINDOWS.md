@@ -79,7 +79,7 @@ npm.cmd run dev
 
 Arrêtez la procédure si une commande échoue et relevez son message. La dernière commande laisse le studio en fonctionnement ; gardez cette fenêtre ouverte.
 
-Ouvrez l'adresse affichée par le studio et actualisez la page avec `Ctrl+F5`. Le nouvel accueil affiche **« Une photo. À vous de choisir la suite. »**. Vos projets restent ceux de votre installation habituelle. Les vidéos de démonstration du dépôt n'importent pas automatiquement leurs projets.
+Ouvrez l'adresse affichée par le studio et actualisez la page avec `Ctrl+F5`. Le nouvel accueil propose **UGC produit**, **Affiliation**, **Histoires et dramas** et **YouTube**, puis le raccourci **« Une photo. À vous de choisir la suite. »**. Vos projets restent ceux de votre installation habituelle. Les vidéos de démonstration du dépôt n'importent pas automatiquement leurs projets.
 
 ## Chemins personnalisés
 

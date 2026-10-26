@@ -1,0 +1,61 @@
+.creator-goals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 26px;
+}
+.creator-goal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding: 22px 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  background: var(--surface);
+  text-align: left;
+}
+.creator-goal:hover,
+.creator-goal:focus-visible {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+.creator-goal:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+.creator-goal > svg {
+  color: var(--brand);
+}
+.creator-goal > strong {
+  font-size: 15px;
+  line-height: 1.4;
+}
+.creator-goal > span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.creator-goal > svg:last-child {
+  align-self: flex-end;
+  margin-top: auto;
+}
+@media (max-width: 1100px) {
+  .creator-goals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 500px) {
+  .creator-goals {
+    gap: 10px;
+  }
+  .creator-goal {
+    padding: 17px 13px;
+  }
+  .creator-goal > strong {
+    font-size: 14px;
+  }
+}

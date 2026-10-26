@@ -16,11 +16,11 @@ Cette consigne s'applique lorsqu'une session de travail reprend. Elle ne program
 - L'import produit est implémenté et testé avec transport simulé ; l'accès à une boutique réelle reste à valider dans un environnement réseau compatible.
 - Après la réponse « accès GitHub vérifié » du 22 octobre 2026, l'envoi de `main` et des huit tags a réussi. Les références distantes ont été comparées aux références locales. Le refus HTTP 403 est résolu pour cet envoi ; conserver les prochains commits avec des pushes normaux, sans modifier l'authentification gérée par la plateforme.
 
-## Création de contenus en cours de livraison
+## Création de contenus livrée
 
 L'utilisateur a approuvé les quatre objectifs : UGC, affiliation, histoires/dramas fictifs et YouTube. Le moteur prépare des scénarios FR/EN modifiables, les persiste avec contrôle de révision et validation humaine, puis traite de vrais montages de scènes avec fichiers importés ou cartons texte, voix facultative, musique, logo, couverture et SRT. Les épisodes réutilisent une bible de personnages ; une déclinaison YouTube prépare un nouveau projet vertical abrégé. Les tests et le build sont validés, y compris un vrai aperçu de 130 secondes et une narration anglaise locale. Aucun moteur de personnages IA n'a été installé.
 
-L'interface des quatre parcours est écrite dans l'espace de travail et sa vérification de production dans Chromium est en cours avant la livraison de l'étape suivante. Conserver ces fichiers non encore enregistrés si une interruption survient. Le guide utilisateur et la note de positionnement commercial sont préparés dans `docs/CREATION_CONTENUS.md` et `docs/POSITIONNEMENT_COMMERCIAL.md`.
+L'interface des quatre parcours est validée dans Chromium en production : brouillons conservés, approbation, réponse perdue puis reprise de création/enregistrement/rendu sans doublon, vrais exports MP4/JPEG/SRT, épisodes suivants, version courte YouTube, langues, thèmes et mobile. Le moteur et l'interface sont livrés en deux étapes Git. Le [guide utilisateur](CREATION_CONTENUS.md) inclut une capture avec des données fictives ; la [note de positionnement](POSITIONNEMENT_COMMERCIAL.md) précise les travaux futurs avant une vente comme service. Les contrôles n'ont pas modifié l'instance existante ; leurs services et données temporaires sont nettoyés.
 
 L'utilisateur demande aussi si le produit est vendable et comparable à d'autres. La réponse : se spécialiser d'abord sur les créatrices et affiliées francophones ; valider la demande avec des utilisatrices. La version actuelle est personnelle, pas un SaaS multi-clients : comptes, isolation des données, facturation et maîtrise des coûts sont des développements futurs, pas des fonctions livrées.
 
