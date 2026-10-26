@@ -4,6 +4,7 @@ import { processPendingJobs } from './lib/jobs';
 import { processFashionJobs } from './lib/fashion-jobs';
 import { processEditJobs } from './lib/editor-jobs';
 import { processReplicateJobs } from './lib/replicate-jobs';
+import { processCreatorJobs } from './lib/creator-jobs';
 import { db } from './lib/db';
 import { storageRoot } from './lib/media';
 
@@ -95,6 +96,7 @@ async function main() {
         await processFashionJobs();
         await processEditJobs();
         await processReplicateJobs();
+        await processCreatorJobs();
       } catch {
         console.error(
           '[worker] Job processing failed; retrying pending tasks.',

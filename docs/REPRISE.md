@@ -11,10 +11,18 @@ Cette consigne s'applique lorsqu'une session de travail reprend. Elle ne program
 ## État conservé
 
 - Les phases 1 à 5 et quatre compléments sont enregistrés dans Git. `3eb9d66` correspond au catalogue des modèles et fournisseurs vidéo compatibles. Le correctif fonctionnel du 23 octobre porte sur les adresses locales de première connexion ; `git log` donne les derniers commits. Les tags `phase-*` et `complement-*` repèrent les étapes de livraison initiales.
-- La dernière suite complète compte 246 tests réussis dans 15 fichiers, TypeScript et le build après la création rapide du 26 octobre. Le parcours HTTP produit du 23 octobre avait repassé dix contrôles sans `APP_ORIGIN` explicite ; les résultats Fashion et montage/Pinterest datent des étapes précédentes. Chromium avait aussi validé la création du compte via l'IP locale et la connexion via localhost. Les preuves et limites sont dans [VALIDATION.md](VALIDATION.md) ; ne pas présenter les résultats historiques comme une nouvelle exécution après une réinitialisation.
+- La dernière suite complète compte 269 tests réussis dans 20 fichiers, TypeScript et le build après le moteur de contenus du 26 octobre. Le parcours HTTP produit du 23 octobre avait repassé dix contrôles sans `APP_ORIGIN` explicite ; les résultats Fashion et montage/Pinterest datent des étapes précédentes. Chromium avait aussi validé la création du compte via l'IP locale et la connexion via localhost. Les preuves et limites sont dans [VALIDATION.md](VALIDATION.md) ; ne pas présenter les résultats historiques comme une nouvelle exécution après une réinitialisation.
 - Aucun appel IA payant n'a été validé. Le budget par défaut est nul. Les modes ComfyUI et Ollama nécessitent encore leurs services et modèles ; les essais réels Runway et Replicate nécessitent une configuration et une confirmation de dépense.
 - L'import produit est implémenté et testé avec transport simulé ; l'accès à une boutique réelle reste à valider dans un environnement réseau compatible.
 - Après la réponse « accès GitHub vérifié » du 22 octobre 2026, l'envoi de `main` et des huit tags a réussi. Les références distantes ont été comparées aux références locales. Le refus HTTP 403 est résolu pour cet envoi ; conserver les prochains commits avec des pushes normaux, sans modifier l'authentification gérée par la plateforme.
+
+## Création de contenus en cours de livraison
+
+L'utilisateur a approuvé les quatre objectifs : UGC, affiliation, histoires/dramas fictifs et YouTube. Le moteur prépare des scénarios FR/EN modifiables, les persiste avec contrôle de révision et validation humaine, puis traite de vrais montages de scènes avec fichiers importés ou cartons texte, voix facultative, musique, logo, couverture et SRT. Les épisodes réutilisent une bible de personnages ; une déclinaison YouTube prépare un nouveau projet vertical abrégé. Les tests et le build sont validés, y compris un vrai aperçu de 130 secondes et une narration anglaise locale. Aucun moteur de personnages IA n'a été installé.
+
+L'interface des quatre parcours est écrite dans l'espace de travail et sa vérification de production dans Chromium est en cours avant la livraison de l'étape suivante. Conserver ces fichiers non encore enregistrés si une interruption survient. Le guide utilisateur et la note de positionnement commercial sont préparés dans `docs/CREATION_CONTENUS.md` et `docs/POSITIONNEMENT_COMMERCIAL.md`.
+
+L'utilisateur demande aussi si le produit est vendable et comparable à d'autres. La réponse : se spécialiser d'abord sur les créatrices et affiliées francophones ; valider la demande avec des utilisatrices. La version actuelle est personnelle, pas un SaaS multi-clients : comptes, isolation des données, facturation et maîtrise des coûts sont des développements futurs, pas des fonctions livrées.
 
 ## Parcours simplifié et outils gratuits
 

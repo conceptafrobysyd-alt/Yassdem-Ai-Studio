@@ -20,8 +20,17 @@ export async function GET(request: Request, context: Context) {
       'X-Content-Type-Options': 'nosniff',
       'Cache-Control': 'private, no-store',
       'Accept-Ranges': 'bytes',
-      'Content-Disposition': `inline; filename="${media.id}.${media.mimeType === 'video/mp4' ? 'mp4' : media.mimeType.split('/')[1]}"`,
+      'Content-Disposition':
+        media.mimeType === 'application/x-subrip'
+          ? `attachment; filename="${media.id}.srt"`
+          : `inline; filename="${media.id}.${media.mimeType === 'video/mp4' ? 'mp4' : media.mimeType.split('/')[1]}"`,
     });
+    if (info.size === 0) {
+      const ranged = request.headers.has('range');
+      headers.set('Content-Length', '0');
+      if (ranged) headers.set('Content-Range', 'bytes */0');
+      return new Response(null, { status: ranged ? 416 : 200, headers });
+    }
     let start = 0;
     let end = info.size - 1;
     let status = 200;

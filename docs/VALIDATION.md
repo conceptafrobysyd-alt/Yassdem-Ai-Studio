@@ -4,7 +4,19 @@ Résultats constatés les **19, 20, 23 et 26 octobre 2026** dans l'environnement
 
 ## État actuel
 
-La suite complète compte **246 tests réussis dans 15 fichiers** après l'ajout de la création rapide du 26 octobre. TypeScript, la génération des types Next.js et le build de production passent. Le parcours HTTP produit du 23 octobre avait réussi **dix contrôles** sans `APP_ORIGIN` explicite, dont les adresses locales et les protections d'origine. Ces contrôles HTTP et les parcours Fashion et montage/Pinterest des étapes précédentes ne sont pas présentés comme une nouvelle exécution le 26 octobre.
+La suite complète compte **269 tests réussis dans 20 fichiers** après l'ajout du moteur de création de contenus du 26 octobre. TypeScript, la génération des types Next.js et le build de production passent. Le parcours HTTP produit du 23 octobre avait réussi **dix contrôles** sans `APP_ORIGIN` explicite, dont les adresses locales et les protections d'origine. Ces contrôles HTTP et les parcours Fashion et montage/Pinterest des étapes précédentes ne sont pas présentés comme une nouvelle exécution le 26 octobre.
+
+## Moteur de contenus UGC, affiliation, fiction et YouTube
+
+Les nouveaux contrôles ajoutent 23 tests Vitest : 12 pour les scénarios, cinq pour les voix, quatre pour le rendu et deux tests pilotant respectivement neuf groupes SQLite/API et dix groupes de traitement persistant. Ces groupes ne sont pas ajoutés au nombre de tests Vitest.
+
+Les scénarios FR/EN, les faits produits, les mentions d'affiliation, les personnages et épisodes, les limites de scènes et les durées jusqu'à dix minutes sont validés. Les créations et versions courtes utilisent des clés de reprise ; les modifications contrôlent les révisions, et la validation humaine est exigée avant rendu. Une répétition d'enregistrement identique après réponse perdue retrouve la même révision. Les autres ateliers, sources existantes, duplications et archives ZIP sont conservés. Les routes restent privées et contrôlent l'origine.
+
+FFmpeg a réellement produit des montages de plusieurs scènes à partir d'images, vidéos, cartons texte, voix et musique, avec logo, mention publicitaire permanente, couverture et SRT. Les contrôles vérifient les pixels, l'audio décodé, les durées, l'intégrité des sources, les limites et le nettoyage après échec. L'aperçu est en 360p et l'export en 720p ; un aperçu YouTube de **130 secondes en 640 × 360** a été encodé, au-delà de l'ancienne limite de deux minutes de l'éditeur. Les sous-titres proviennent du scénario approuvé, sans reconnaissance vocale. Un SRT sans texte reste téléchargeable correctement, y compris le refus d'une plage impossible sur ce fichier vide.
+
+Le traitement persistant vérifie la concurrence, les conflits de clé, les droits musicaux, le scénario figé malgré une modification ultérieure du projet, la reprise d'une tâche interrompue et l'annulation en file. Les coûts et réservations sont nuls, sans appel payant. La déclinaison YouTube prépare un projet vertical indépendant de 30 à 60 secondes à relire et valider ; elle ne prétend pas extraire automatiquement les meilleurs moments d'une vidéo.
+
+Une véritable voix anglaise FFmpeg/flite est générée et son audibilité vérifiée. Le français ne bascule jamais silencieusement sur une voix anglaise. Windows et Piper sont vérifiés par contrats simulés ; aucune synthèse native Windows ou inférence Piper/Ollama réelle n'est revendiquée. Aucun modèle ni dépendance supplémentaire n'a été téléchargé. Les avatars et visuels de personnages récurrents ne sont pas générés par ce moteur de montage.
 
 ## Création rapide et sélection GitHub du 26 octobre
 
