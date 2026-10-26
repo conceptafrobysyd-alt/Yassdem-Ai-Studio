@@ -1,10 +1,22 @@
 # Validation
 
-Résultats constatés les **19, 20 et 23 octobre 2026** dans l'environnement Linux cloud, avec vérification dans un navigateur réel. Les tests payants Runway n'ont pas été exécutés. Le premier démarrage Windows a été rapporté par l'utilisateur ; le parcours complet sur sa machine et l'installation macOS ne sont pas encore validés.
+Résultats constatés les **19, 20, 23 et 26 octobre 2026** dans l'environnement Linux cloud, avec vérification dans un navigateur réel. Les tests payants Runway n'ont pas été exécutés. Le premier démarrage Windows a été rapporté par l'utilisateur ; le parcours complet sur sa machine et l'installation macOS ne sont pas encore validés.
 
-## État actuel après les compléments
+## État actuel
 
-La suite complète compte **245 tests réussis dans 14 fichiers** après le correctif d'authentification locale du 23 octobre. TypeScript, la génération des types Next.js et le build de production passent. Le parcours HTTP produit a été réexécuté sans `APP_ORIGIN` explicite : **dix contrôles réussis**, dont les adresses locales et les protections d'origine. Les validations Fashion (trois groupes) et montage/Pinterest (quatre groupes) décrites plus bas datent des étapes précédentes et n'ont pas été réexécutées pour ce correctif.
+La suite complète compte **246 tests réussis dans 15 fichiers** après l'ajout de la création rapide du 26 octobre. TypeScript, la génération des types Next.js et le build de production passent. Le parcours HTTP produit du 23 octobre avait réussi **dix contrôles** sans `APP_ORIGIN` explicite, dont les adresses locales et les protections d'origine. Ces contrôles HTTP et les parcours Fashion et montage/Pinterest des étapes précédentes ne sont pas présentés comme une nouvelle exécution le 26 octobre.
+
+## Création rapide et sélection GitHub du 26 octobre
+
+L'accueil permet d'importer une seule photo puis de lancer une vidéo locale ou un export d'image avec les réglages prêts à l'emploi. Le raccourci vidéo crée et nomme son projet automatiquement et force le moteur local, quelle que soit la préférence avancée. Les paramètres de marque proviennent des préférences enregistrées. La photo avec mannequin est un raccourci d'image éditoriale ComfyUI, disponible uniquement si un workflow compatible avec une seule photo et sans portrait obligatoire est configuré et joignable.
+
+Le nouveau test Vitest pilote **huit groupes d'assertions** avec une vraie base SQLite et FFmpeg. Il couvre l'authentification et les origines, les entrées refusées sans effet sur les projets, les réglages locaux gratuits malgré des fournisseurs payants activés, les doubles soumissions et conflits de clé, la reprise d'une préparation persistée sans tâche, un vrai MP4 de cinq secondes en 720 × 1280 avec pixels du logo vérifiés, les workflows ou services indisponibles sans projet orphelin, et la reprise d'une tâche mannequin déjà acceptée après arrêt du service. Dépense, réservation et budget engagé restent nuls ; les préférences existantes et le rattachement des médias à leurs anciens projets sont conservés.
+
+Le contrat ComfyUI utilise un serveur simulé : seuls les appels de statut sont autorisés pendant la mise en file. Il ne prouve aucune génération mannequin réelle. L'export de photo reprend le moteur d'image existant ; une réponse réseau perdue doit être vérifiée dans la bibliothèque avant de relancer cet export synchrone.
+
+Dans Chromium en production, l'import suivi d'un seul clic et d'un seul POST crée un vrai MP4 H.264 de cinq secondes en 720 × 1280, lu et téléchargé depuis l'accueil sans modal de projet. Une réponse perdue après une vraie acceptation HTTP 202 a été simulée : la relance conserve la même clé et retrouve le même projet et la même tâche, sans doublon. Un vrai PNG de 1000 × 1250 rejoint la bibliothèque. Le contenu, les paramètres et le rattachement d'une source préexistante sont conservés ; les changements FR/EN, de navigation et de thème gardent la photo et le résultat. Le mannequin indisponible affiche son explication et mène aux réglages ; l'absence de workflow affiche bien le message d'installation/configuration. À 390 pixels, aucun débordement horizontal ni exception JavaScript n'a été observé. Ces essais utilisent une base et un stockage temporaires, sans appel IA ni dépense ; ils ne valident pas l'installation Windows de l'utilisateur.
+
+La [sélection GitHub](OUTILS_GRATUITS.md) compare huit outils, puis examine les limitations de plusieurs projets Adobe et d'essayage. Les README et licences consultés sont référencés par commit. Aucune nouvelle dépendance ni poids de modèle n'a été installé pour cette recherche. Les conditions des modèles non confirmées et les ressources du PC Windows restent à vérifier avant activation.
 
 ## Démonstration guidée du 23 octobre
 

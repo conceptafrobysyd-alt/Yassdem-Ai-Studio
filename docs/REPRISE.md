@@ -1,6 +1,6 @@
 # Point de reprise
 
-Dernière mise à jour : 23 octobre 2026.
+Dernière mise à jour : 26 octobre 2026.
 
 ## Consigne de continuité
 
@@ -11,10 +11,20 @@ Cette consigne s'applique lorsqu'une session de travail reprend. Elle ne program
 ## État conservé
 
 - Les phases 1 à 5 et quatre compléments sont enregistrés dans Git. `3eb9d66` correspond au catalogue des modèles et fournisseurs vidéo compatibles. Le correctif fonctionnel du 23 octobre porte sur les adresses locales de première connexion ; `git log` donne les derniers commits. Les tags `phase-*` et `complement-*` repèrent les étapes de livraison initiales.
-- La dernière validation fonctionnelle compte 245 tests réussis, TypeScript et le build. Le parcours HTTP produit a repassé dix contrôles sans `APP_ORIGIN` explicite ; les résultats Fashion et montage/Pinterest datent des étapes précédentes. Chromium a aussi validé la création du compte via l'IP locale et la connexion via localhost. Les preuves et limites sont dans [VALIDATION.md](VALIDATION.md) ; ne pas présenter ces résultats historiques comme une nouvelle exécution après une réinitialisation.
+- La dernière suite complète compte 246 tests réussis dans 15 fichiers, TypeScript et le build après la création rapide du 26 octobre. Le parcours HTTP produit du 23 octobre avait repassé dix contrôles sans `APP_ORIGIN` explicite ; les résultats Fashion et montage/Pinterest datent des étapes précédentes. Chromium avait aussi validé la création du compte via l'IP locale et la connexion via localhost. Les preuves et limites sont dans [VALIDATION.md](VALIDATION.md) ; ne pas présenter les résultats historiques comme une nouvelle exécution après une réinitialisation.
 - Aucun appel IA payant n'a été validé. Le budget par défaut est nul. Les modes ComfyUI et Ollama nécessitent encore leurs services et modèles ; les essais réels Runway et Replicate nécessitent une configuration et une confirmation de dépense.
 - L'import produit est implémenté et testé avec transport simulé ; l'accès à une boutique réelle reste à valider dans un environnement réseau compatible.
 - Après la réponse « accès GitHub vérifié » du 22 octobre 2026, l'envoi de `main` et des huit tags a réussi. Les références distantes ont été comparées aux références locales. Le refus HTTP 403 est résolu pour cet envoi ; conserver les prochains commits avec des pushes normaux, sans modifier l'authentification gérée par la plateforme.
+
+## Parcours simplifié et outils gratuits
+
+L'utilisateur trouve le studio peu intuitif et souhaite importer une photo puis choisir un résultat en un clic. L'accueil présente désormais **Créer ma vidéo**, **Préparer ma photo** et **Photo avec mannequin**. Le projet vidéo est créé automatiquement ; la photo cadrée rejoint la bibliothèque. Les ateliers détaillés restent facultatifs. Les clés de reprise empêchent les doublons de projet et de tâche après une réponse perdue pour les raccourcis vidéo et mannequin. La création vidéo rapide reste locale même si un fournisseur payant est préféré dans les réglages avancés.
+
+La [création rapide](CREATION_RAPIDE.md) décrit le nouveau parcours. La [recherche GitHub](OUTILS_GRATUITS.md) compare huit outils avec leurs licences, leurs modèles et leurs besoins matériels ; elle examine aussi les projets Adobe et d'essayage dont les conditions commerciales empêchent une activation par défaut. Aucune nouvelle dépendance ni modèle n'a été installé. Le bouton mannequin exige un service et un workflow ComfyUI compatibles ; il ne prouve pas une inférence réelle ni un essayage fidèle.
+
+Le parcours Chromium en production a validé l'import puis le clic unique, le vrai MP4 et son téléchargement, la réponse perdue après acceptation et sa reprise sans doublon, le PNG dans la bibliothèque, les sources préexistantes conservées, les langues, la navigation, les thèmes et le mobile. La [capture du nouvel accueil](media/creation-rapide.png) utilise des données fictives. Les bases, stockages et processus de contrôle isolés ont été nettoyés ; l'instance existante a été conservée.
+
+L'utilisateur ne connaît pas sa carte graphique. Le document explique comment en relever le nom sur Windows. Le choix et l'installation d'un modèle utilisable restent à faire selon son matériel et les licences de toute la chaîne. Les modifications GitHub ne mettent pas automatiquement à jour sa copie Windows ; conserver `.env`, la base et `storage/` lors de cette mise à jour.
 
 ## Démonstration demandée par l'utilisateur
 

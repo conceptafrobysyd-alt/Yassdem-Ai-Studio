@@ -6,6 +6,8 @@ Le parcours local produit de vrais fichiers : vidéo par zoom FFmpeg d'une image
 
 ## Découvrir le studio
 
+L'accueil propose maintenant une [création rapide](docs/CREATION_RAPIDE.md) : importez une photo, puis lancez directement la vidéo ou préparez une image avec votre logo. Le projet vidéo est créé automatiquement. La photo avec mannequin devient disponible lorsqu'un moteur IA local compatible est prêt. La [sélection d'outils gratuits sur GitHub](docs/OUTILS_GRATUITS.md) précise les licences, les besoins matériels et les possibilités d'intégration.
+
 La [visite guidée en français](docs/DEMONSTRATION.md) présente les huit écrans et un premier parcours complet. Retrouvez la [démonstration vidéo avec légendes](docs/media/demo-yassdem.mp4) et le [pack d'exemples à télécharger](docs/media/exemples-yassdem.zip). Les illustrations sont fictives ; les vidéos, la planche, le montage et les exports sont réellement produits par les fonctions locales, sans appel IA.
 
 ## Installation rapide

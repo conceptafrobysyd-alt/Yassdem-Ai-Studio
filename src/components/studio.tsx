@@ -66,6 +66,7 @@ import { ImageExportPanel } from './image-export-panel';
 import { StylePresetsPanel } from './style-presets-panel';
 import { ProductImportPanel } from './product-import-panel';
 import { ModelCatalogPanel } from './model-catalog-panel';
+import { QuickCreatePanel } from './quick-create-panel';
 import fr from '@/messages/fr';
 import en from '@/messages/en';
 type Locale = 'fr' | 'en';
@@ -851,74 +852,60 @@ function StudioApp({
               ) : ['fashion', 'lookbook', 'editor', 'seo'].includes(
                   page,
                 ) ? null : (
-                <Button onClick={newProject}>
+                <Button
+                  onClick={newProject}
+                  variant={page === 'dashboard' ? 'secondary' : 'primary'}
+                >
                   <Plus size={17} />
-                  {t('newProject')}
+                  {t(page === 'dashboard' ? 'advancedCreation' : 'newProject')}
                 </Button>
               )}
             </div>
           </div>
+          <div hidden={page !== 'dashboard'}>
+            <QuickCreatePanel
+              locale={locale}
+              media={media}
+              jobs={jobs}
+              settings={snapshot?.settings || settings}
+              onReload={reload}
+              onQueued={({ project: createdProject, job }) => {
+                setSnapshot((current) =>
+                  current
+                    ? {
+                        ...current,
+                        projects: [
+                          createdProject,
+                          ...(current.projects || []).filter(
+                            (item) => item.id !== createdProject.id,
+                          ),
+                        ],
+                        jobs: [
+                          job,
+                          ...(current.jobs || []).filter(
+                            (item) => item.id !== job.id,
+                          ),
+                        ],
+                      }
+                    : current,
+                );
+              }}
+              onOpenProject={(id) => {
+                const target = projects.find((item) => item.id === id);
+                if (target) openProject(target);
+              }}
+              onConfigure={() => {
+                navigate('settings');
+                requestAnimationFrame(() =>
+                  document
+                    .getElementById('local-creation-settings')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+                );
+              }}
+            />
+          </div>
           {page === 'dashboard' && (
             <>
-              <section className="hero">
-                <div className="hero-copy">
-                  <span className="eyebrow">
-                    <span className="eyebrow-line" />
-                    {t('heroEyebrow')}
-                  </span>
-                  <h2>
-                    {t('heroTitle')
-                      .split('\n')
-                      .map((line, i) => (
-                        <span
-                          key={line}
-                          className={i === 1 ? 'hero-italic' : ''}
-                        >
-                          {line}
-                        </span>
-                      ))}
-                  </h2>
-                  <p>{t('heroDescription')}</p>
-                  <Button className="hero-button" onClick={newProject}>
-                    {t(projects.length ? 'newProject' : 'startCreating')}
-                    <ArrowUpRight size={17} />
-                  </Button>
-                </div>
-                <div className="hero-art" aria-hidden="true">
-                  <div className="art-orbit orbit-one" />
-                  <div className="art-orbit orbit-two" />
-                  <div className="art-spark sparkle-one">✧</div>
-                  <div className="art-spark sparkle-two">✦</div>
-                  <div className="art-frame">
-                    <div className="art-frame-bar">
-                      <span />
-                      <span />
-                      <span />
-                    </div>
-                    <div className="art-sun" />
-                    <div className="art-pedestal" />
-                    <div className="art-bottle">
-                      <div className="bottle-cap" />
-                      <div className="bottle-glass">
-                        <span>YASSDEM</span>
-                        <small>STUDIO</small>
-                      </div>
-                    </div>
-                    <div className="art-shadow" />
-                    <div className="art-caption">
-                      <span>01 — YASSDEM STUDIO</span>
-                      <Sparkles size={12} />
-                    </div>
-                  </div>
-                  <div className="art-chip">
-                    <span className="chip-icon">
-                      <Play size={13} fill="currentColor" />
-                    </span>
-                    <span>{t('heroLabel')}</span>
-                  </div>
-                </div>
-              </section>
-              <div className="illustration-note">{t('noGenerated')}</div>
               <section className="stats-grid">
                 {[
                   {
@@ -2337,15 +2324,37 @@ function StudioApp({
                   </p>
                   <p className="field-hint">{t('budgetNote')}</p>
                 </SettingsPanel>
-                <ProvidersPanel
-                  locale={locale}
-                  projects={projects}
-                  media={media}
-                  jobs={jobs}
-                  settings={settings}
-                  onUpdateSettings={updateSettings}
-                  onRefresh={reload}
-                />
+                <div
+                  id="local-creation-settings"
+                  className="local-creation-settings"
+                >
+                  <SettingsPanel
+                    icon={<Shirt size={18} />}
+                    title={t('quickModelSetupTitle')}
+                  >
+                    <p className="section-description">
+                      {t('quickModelSetupDescription')}
+                    </p>
+                    <a
+                      className="text-link"
+                      href="https://github.com/conceptafrobysyd-alt/Yassdem-Ai-Studio/blob/main/docs/OUTILS_GRATUITS.md"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {t('quickModelSetupGuide')}
+                      <ArrowUpRight size={14} />
+                    </a>
+                  </SettingsPanel>
+                  <ProvidersPanel
+                    locale={locale}
+                    projects={projects}
+                    media={media}
+                    jobs={jobs}
+                    settings={settings}
+                    onUpdateSettings={updateSettings}
+                    onRefresh={reload}
+                  />
+                </div>
                 <ModelCatalogPanel locale={locale} />
                 <SettingsPanel
                   icon={<Palette size={18} />}

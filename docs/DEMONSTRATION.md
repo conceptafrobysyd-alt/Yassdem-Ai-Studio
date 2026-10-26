@@ -1,5 +1,7 @@
 # Découvrir Yassdem AI Studio
 
+Depuis le 26 octobre, l'accueil propose un [parcours rapide en un clic après import](CREATION_RAPIDE.md). La vidéo ci-dessous a été enregistrée le 23 octobre : elle présente les ateliers avancés et précède ce nouvel accueil.
+
 Cette visite vous accompagne de la première image au MP4, puis à sa présentation sur Pinterest. Comptez environ dix minutes pour découvrir les écrans, en ajoutant le temps de calcul des images et vidéos sur votre ordinateur.
 
 - [Voir ou télécharger la démonstration vidéo](media/demo-yassdem.mp4).

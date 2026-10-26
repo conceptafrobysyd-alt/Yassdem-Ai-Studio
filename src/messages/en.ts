@@ -1,4 +1,9 @@
 const en = {
+  advancedCreation: 'Advanced creation',
+  quickModelSetupTitle: 'Enable photos with a model',
+  quickModelSetupDescription:
+    'This creation uses an AI engine installed on your computer and a suitable model. An initial setup is required; the home button becomes available when a compatible engine is ready. The simple video and the photo with your logo already work without this engine.',
+  quickModelSetupGuide: 'Explore free tools and check my computer',
   providerReplicate: 'Replicate · configured video model',
   replicateVideoControls:
     'This model uses its prompt and an optional image. Adjust framing, trims and logos after receiving the result in the editor or a local export. Configuration does not guarantee account access to the model.',
@@ -49,8 +54,8 @@ const en = {
   phase4: 'Available in phase 4',
   private: 'Private workspace',
   local: 'Your creations, your world.',
-  greeting: 'Your studio, your ideas.',
-  intro: 'Bring your products to life. Create at your own pace.',
+  greeting: 'What would you like to create?',
+  intro: 'Upload a photo, then choose your result.',
   newProject: 'New project',
   productVideo: 'Product video',
   heroEyebrow: 'FROM IDEA TO MOTION',

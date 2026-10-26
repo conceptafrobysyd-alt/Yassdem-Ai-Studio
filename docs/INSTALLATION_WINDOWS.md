@@ -49,6 +49,38 @@ Ouvrez l'adresse indiquée dans le terminal et créez le mot de passe du studio 
 
 Les processus web et worker démarrent ensemble. Laissez PowerShell ouvert pendant les générations et exports ; `Ctrl+C` arrête l'application.
 
+## Mettre à jour une installation existante
+
+Les modifications sur GitHub ne remplacent pas automatiquement les fichiers de votre ordinateur. Pour obtenir le nouvel accueil :
+
+1. Arrêtez le studio avec `Ctrl+C` dans sa fenêtre PowerShell.
+2. Copiez votre dossier d'installation complet dans un autre emplacement pour conserver une sauvegarde avant la mise à jour. Conservez aussi les données situées ailleurs si vous avez configuré des chemins personnalisés.
+3. Téléchargez à nouveau **Code → Download ZIP** depuis le dépôt GitHub. Extrayez-le dans un **nouveau dossier distinct** et ouvrez son sous-dossier contenant `package.json`.
+4. Copiez le contenu de ce dossier de sources dans votre **dossier d'installation habituel**, en remplaçant les fichiers de code. Conservez votre `.env`, votre base `prisma/studio.db` et votre dossier `storage/` ; ils ne sont pas fournis dans le ZIP de sources. Le fichier `.env.example` reste un exemple, pas un remplacement de votre configuration.
+5. Ouvrez PowerShell dans le dossier d'installation habituel et vérifiez :
+
+```powershell
+Test-Path .\package-lock.json
+```
+
+Le résultat doit être `True`. Si c'est `False`, retrouvez le dossier contenant `package.json` avant de lancer npm. Exécutez ensuite les commandes suivantes **une à la fois**, en attendant leur réussite :
+
+```powershell
+npm.cmd ci
+```
+
+```powershell
+npm.cmd run db:deploy
+```
+
+```powershell
+npm.cmd run dev
+```
+
+Arrêtez la procédure si une commande échoue et relevez son message. La dernière commande laisse le studio en fonctionnement ; gardez cette fenêtre ouverte.
+
+Ouvrez l'adresse affichée par le studio et actualisez la page avec `Ctrl+F5`. Le nouvel accueil affiche **« Une photo. À vous de choisir la suite. »**. Vos projets restent ceux de votre installation habituelle. Les vidéos de démonstration du dépôt n'importent pas automatiquement leurs projets.
+
 ## Chemins personnalisés
 
 Si les exécutables ne sont pas dans le `PATH`, indiquez leurs chemins dans `.env`. Les barres obliques fonctionnent sous Windows et évitent les ambiguïtés d'échappement :

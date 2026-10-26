@@ -1,4 +1,9 @@
 const fr = {
+  advancedCreation: 'Création avancée',
+  quickModelSetupTitle: 'Activer la photo avec mannequin',
+  quickModelSetupDescription:
+    'Cette création utilise un moteur IA installé sur votre ordinateur et un modèle adapté. Une configuration initiale est nécessaire ; le bouton de l’accueil devient disponible lorsqu’un moteur compatible est prêt. La vidéo simple et la photo avec votre logo sont déjà utilisables sans ce moteur.',
+  quickModelSetupGuide: 'Voir les outils gratuits et vérifier mon ordinateur',
   providerReplicate: 'Replicate · modèle vidéo configuré',
   replicateVideoControls:
     'Ce modèle utilise sa description et une image facultative. Les formats, coupes et logos se règlent après réception dans le montage ou lors d’un export local. Une version configurée ne garantit pas l’accès du compte au modèle.',
@@ -53,8 +58,8 @@ const fr = {
   phase4: 'Disponible à la phase 4',
   private: 'Espace privé',
   local: 'Vos créations, votre univers.',
-  greeting: 'Votre studio, vos idées.',
-  intro: 'Donnez vie à vos produits. Créez à votre rythme.',
+  greeting: 'Que voulez-vous créer ?',
+  intro: 'Importez une photo, puis choisissez votre résultat.',
   newProject: 'Nouveau projet',
   productVideo: 'Vidéo produit',
   heroEyebrow: 'DE L’IDÉE AU MOUVEMENT',
