@@ -22,7 +22,7 @@
     "test:smoke:editor": "tsx scripts/smoke-editor.ts"
   },
   "dependencies": {
-    "@prisma/adapter-better-sqlite3": "6.19.0",
+    "@prisma/adapter-better-sqlite3": "7.10.1",
     "@prisma/client": "6.19.0",
     "archiver": "^7.0.1",
     "clsx": "^2.1.1",
