@@ -2,6 +2,8 @@
 
 L'accueil propose **UGC produit**, **Affiliation**, **Histoires et dramas** et **YouTube**. Ces choix ouvrent le même parcours en trois étapes : votre idée, le scénario et les visuels, puis le montage. Le raccourci [une photo → une vidéo](CREATION_RAPIDE.md) reste disponible.
 
+[Voir la démonstration vidéo des quatre parcours](DEMO_CONTENUS.md).
+
 ![Le parcours de création avec un vrai montage et des fichiers fictifs de démonstration](media/creation-contenus.png)
 
 ## 1. Préparer votre scénario

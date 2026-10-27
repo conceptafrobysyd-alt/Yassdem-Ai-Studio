@@ -1,6 +1,6 @@
 # Point de reprise
 
-Dernière mise à jour : 26 octobre 2026.
+Dernière mise à jour : 27 octobre 2026.
 
 ## Consigne de continuité
 
@@ -34,7 +34,13 @@ Le parcours Chromium en production a validé l'import puis le clic unique, le vr
 
 L'utilisateur ne connaît pas sa carte graphique. Le document explique comment en relever le nom sur Windows. Le choix et l'installation d'un modèle utilisable restent à faire selon son matériel et les licences de toute la chaîne. Les modifications GitHub ne mettent pas automatiquement à jour sa copie Windows ; conserver `.env`, la base et `storage/` lors de cette mise à jour.
 
-## Démonstration demandée par l'utilisateur
+## Démonstration des quatre parcours du 27 octobre
+
+À la demande de l'utilisateur, une [nouvelle visite vidéo](DEMO_CONTENUS.md) présente UGC, affiliation, histoires/dramas et YouTube en environ 2 min 28 s. Elle montre la préparation du scénario, l'import, la validation et les véritables aperçu et montage UGC, puis les mentions d'affiliation, l'épisode suivant et la version courte YouTube. Les légendes sont en français, avec une musique originale et sans voix off. Un MP4 produit d'environ dix secondes et son SRT sont fournis séparément.
+
+Les exemples sont fictifs et les résultats sont calculés par les fonctions locales sur une instance isolée. L'application et les données personnelles restent inchangées. La fiction et YouTube montrent la préparation des scénarios, sans génération d'acteurs ni de personnages IA. Les fichiers sont volontairement versionnés dans `docs/media/`. La visite des huit ateliers du 23 octobre reste disponible séparément.
+
+## Démonstration des huit ateliers du 23 octobre
 
 La visite est disponible dans [DEMONSTRATION.md](DEMONSTRATION.md), avec une [vidéo de 2 min 37 s](media/demo-yassdem.mp4), neuf captures et un [pack d'exemples](media/exemples-yassdem.zip). Les huit écrans sont présentés en français. Le guide accompagne un premier parcours avec vidéo produit, planche Fashion, montage, Pinterest et sauvegarde. Les fichiers du pack sont des illustrations et une musique originales ; ses résultats ont été réellement produits par les fonctions locales, sans appel IA ni dépense.
 

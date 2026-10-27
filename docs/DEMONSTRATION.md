@@ -1,5 +1,7 @@
 # Découvrir Yassdem AI Studio
 
+Pour les quatre parcours de création de contenus, consultez la [nouvelle démonstration du 27 octobre](DEMO_CONTENUS.md).
+
 Depuis le 26 octobre, l'accueil propose un [parcours rapide en un clic après import](CREATION_RAPIDE.md). La vidéo ci-dessous a été enregistrée le 23 octobre : elle présente les ateliers avancés et précède ce nouvel accueil.
 
 Le [studio de contenus](CREATION_CONTENUS.md) ajoute aussi les parcours UGC, affiliation, histoires/dramas et YouTube, avec scénario modifiable puis montage. Ces nouveaux écrans ne figurent pas dans la vidéo du 23 octobre.

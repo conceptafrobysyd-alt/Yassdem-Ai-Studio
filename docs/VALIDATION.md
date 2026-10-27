@@ -1,10 +1,20 @@
 # Validation
 
-Résultats constatés les **19, 20, 23 et 26 octobre 2026** dans l'environnement Linux cloud, avec vérification dans un navigateur réel. Les tests payants Runway n'ont pas été exécutés. Le premier démarrage Windows a été rapporté par l'utilisateur ; le parcours complet sur sa machine et l'installation macOS ne sont pas encore validés.
+Résultats constatés les **19, 20, 23, 26 et 27 octobre 2026** dans l'environnement Linux cloud, avec vérification dans un navigateur réel. Les tests payants Runway n'ont pas été exécutés. Le premier démarrage Windows a été rapporté par l'utilisateur ; le parcours complet sur sa machine et l'installation macOS ne sont pas encore validés.
 
 ## État actuel
 
 La suite complète compte **269 tests réussis dans 20 fichiers** après l'ajout du moteur de création de contenus du 26 octobre. TypeScript, la génération des types Next.js et le build de production passent. Le parcours HTTP produit du 23 octobre avait réussi **dix contrôles** sans `APP_ORIGIN` explicite, dont les adresses locales et les protections d'origine. Ces contrôles HTTP et les parcours Fashion et montage/Pinterest des étapes précédentes ne sont pas présentés comme une nouvelle exécution le 26 octobre.
+
+## Visite filmée des quatre parcours du 27 octobre
+
+La [nouvelle démonstration](DEMO_CONTENUS.md) utilise le build de l'application du 26 octobre, une base et un stockage temporaires et les illustrations originales du pack de démonstration. La visite couvre les quatre objectifs, la préparation et l'édition d'un scénario UGC, l'import des visuels, la validation, le calcul d'un aperçu puis d'un export, la lecture du résultat et les téléchargements. Elle montre aussi les mentions d'affiliation, la conservation des personnages pour l'épisode suivant et la proposition de version courte YouTube.
+
+L'enregistrement compte 19 chapitres, environ 2 min 28 s, en 1440 × 1120 avec légendes françaises et musique originale sans voix off. Le montage produit séparé est un vrai MP4 H.264/AAC de 10,021 secondes en 720 × 1280, accompagné de son SRT. Les illustrations restent fictives ; aucun acteur, avatar ou visuel IA n'est généré pour cette visite. L'état final isolé compte six projets, deux tâches de montage réussies et neuf médias, sans dépense ni erreur JavaScript observée. Les services et la base temporaires sont nettoyés.
+
+Le MP4 final est vérifié avec FFprobe et lu dans Chromium : progression initiale puis recherches à 19, 75, 108, 136 et 145 secondes, sans erreur média ni exception JavaScript. La synchronisation entre images et légendes a été contrôlée et corrigée avant livraison. Les couleurs utilisent une sortie vidéo H.264 en yuv420p ; le fichier pèse environ 3,75 Mio. Les 75 liens relatifs des guides et points de reprise consultés existent.
+
+Cette livraison modifie uniquement la documentation et les médias de démonstration. Elle ne réexécute pas la suite de tests ni le build et ne valide pas l'ordinateur Windows de l'utilisateur.
 
 ## Moteur de contenus UGC, affiliation, fiction et YouTube
 
