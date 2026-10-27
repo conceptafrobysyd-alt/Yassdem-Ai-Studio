@@ -6,6 +6,14 @@ Résultats constatés les **19, 20, 23, 26 et 27 octobre 2026** dans l'environne
 
 La suite complète compte **269 tests réussis dans 20 fichiers**, réexécutés avec succès le 27 octobre après l'optimisation de l'accueil. TypeScript, la génération des types Next.js et le build de production passent aussi à cette date. Le parcours HTTP produit du 23 octobre avait réussi **dix contrôles** sans `APP_ORIGIN` explicite, dont les adresses locales et les protections d'origine. Ces contrôles HTTP et les parcours Fashion et montage/Pinterest restent des résultats des étapes précédentes.
 
+## Lancement Windows en version optimisée
+
+`Ouvrir-Yassdem.cmd` lance un orchestrateur Node sans dépendance supplémentaire. Il contrôle Node/npm, refuse un port occupé ou un worker déjà actif, conserve une configuration existante, prépare les dépendances et applique les migrations sans réinitialiser la base. Il compile la version de production à la première utilisation ou après changement du code/configuration, puis réutilise ce build. Le navigateur est ouvert seulement après confirmation du démarrage web/worker et une réponse HTTP réussie.
+
+Les **cinq tests Node** de `npm run test:launcher` réussissent sous Linux. Ils contrôlent la conservation des fichiers `.env`, SQLite et médias avec chemins comportant des espaces, les caches et leurs invalidations après changement de sources/migrations/lock/Node, la reprise après interruption d'installation ou de build, les origines et ports, l'exclusion des données personnelles de l'empreinte du build et l'absence de secret en clair dans ses témoins. Un vrai serveur HTTP occupé est laissé intact ; les sondes de disponibilité refusent HTTP 503 et un enfant arrêté. Les opérations npm de préparation sont simulées dans ces tests, pas une installation Windows complète.
+
+La syntaxe JavaScript et les différences Git passent les contrôles. Le fichier `.cmd`, `cmd.exe`, l'ouverture du navigateur Windows et l'arrêt de l'arbre enfant par `taskkill` n'ont pas été exécutés sous Linux. Le lancement réel sur le PC de l'utilisateur et son temps de chargement restent à confirmer. Le [guide Windows](INSTALLATION_WINDOWS.md) explique la mise à jour de la copie ZIP en conservant configuration, base et médias, puis le lancement compilé plutôt que `npm run dev`.
+
 ## Chargement de l'accueil du 27 octobre
 
 Les onze ateliers et panneaux avancés sont chargés à la demande. L'atelier de contenus n'est monté qu'à sa première ouverture, puis reste conservé pour préserver les brouillons pendant les changements de page. Le suivi des tâches attend la fin d'une réponse avant de programmer la suivante.

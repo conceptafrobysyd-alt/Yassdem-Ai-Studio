@@ -13,6 +13,7 @@
     "start": "concurrently -k -n web,worker \"next start --hostname 127.0.0.1\" \"tsx src/worker.ts\"",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
+    "test:launcher": "node --test scripts/start-studio.test.mjs",
     "db:generate": "prisma generate",
     "db:deploy": "prisma migrate deploy",
     "postinstall": "prisma generate",

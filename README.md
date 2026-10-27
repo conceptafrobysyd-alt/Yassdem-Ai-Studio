@@ -18,6 +18,8 @@ La [visite guidée en français](docs/DEMONSTRATION.md) présente les huit écra
 
 Prérequis : Node.js 22.12 ou ultérieur dans les branches 22 à 24, npm, FFmpeg et FFprobe disponibles dans le `PATH`. Utilisez de préférence Node.js 24 LTS. FFmpeg doit disposer de `libx264` pour H.264 ; `libx265` est nécessaire pour H.265. Aucun GPU n'est nécessaire pour le parcours local.
 
+**Sous Windows, double-cliquez sur `Ouvrir-Yassdem.cmd` dans le dossier du projet.** Il prépare les dépendances, applique les migrations puis ouvre la version optimisée dans votre navigateur. La première préparation peut prendre plusieurs minutes ; les lancements suivants réutilisent la compilation tant que le code et sa configuration n'ont pas changé. Gardez sa fenêtre ouverte. Si les choix UGC, Affiliation, Histoires et YouTube sont absents de votre installation, suivez d'abord la [mise à jour Windows](docs/INSTALLATION_WINDOWS.md#mettre-à-jour-pour-retrouver-ugc-affiliation-histoires-et-youtube), en conservant votre configuration et vos données.
+
 Depuis le dossier du projet, sous Linux ou macOS :
 
 ```bash
@@ -29,7 +31,7 @@ npm run dev
 
 La première commande conserve un éventuel `.env` existant. `npm ci` installe les versions du fichier de verrouillage. `npm install` convient lors d'une évolution volontaire des dépendances. Le script d'installation génère le client Prisma ; la commande `db:deploy` applique les migrations SQLite.
 
-Sous Debian/Ubuntu, installez FFmpeg avec `sudo apt-get install ffmpeg`. Sous macOS avec Homebrew : `brew install ffmpeg`. Vérifiez ensuite `ffmpeg -version` et `ffprobe -version`. Le [guide Windows](docs/INSTALLATION_WINDOWS.md) décrit les équivalents PowerShell.
+Sous Debian/Ubuntu, installez FFmpeg avec `sudo apt-get install ffmpeg`. Sous macOS avec Homebrew : `brew install ffmpeg`. Vérifiez ensuite `ffmpeg -version` et `ffprobe -version`. Le [guide Windows](docs/INSTALLATION_WINDOWS.md) décrit aussi la préparation manuelle avec PowerShell.
 
 `npm run dev` lance le serveur Next.js et le worker vidéo ensemble. Ouvrez l'adresse affichée dans le terminal. Au premier lancement, créez un mot de passe privé d'au moins 12 caractères. Effectuez cette étape en local avant toute exposition publique. Les scripts écoutent sur l'interface de boucle locale par défaut.
 
@@ -44,10 +46,12 @@ Gardez le terminal actif : le worker traite les tâches persistées en base. `Ct
 
 ## Premier parcours
 
-1. Créez un projet et importez une photo PNG, JPEG ou WebP.
-2. Ouvrez Product Video Studio, sélectionnez cette image et choisissez le format, la durée et la résolution.
-3. Choisissez l'animation locale pour produire une vraie vidéo sans frais d'API. Le fournisseur Runway se configure séparément dans les paramètres.
-4. Consultez la tâche, prévisualisez le MP4 terminé puis téléchargez-le. Un logo de la médiathèque peut servir de filigrane.
+1. Dans l'accueil, choisissez **UGC produit**, **Affiliation**, **Histoires et dramas** ou **YouTube**.
+2. Préparez le scénario guidé à partir de vos informations, puis importez vos images ou vidéos et relisez les scènes.
+3. Enregistrez puis validez le scénario et créez le montage local, sans frais d'API.
+4. Consultez le résultat et téléchargez le MP4, sa couverture et ses sous-titres. Les [quatre parcours](docs/CREATION_CONTENUS.md) détaillent les voix et les options.
+
+Pour essayer une seule photo sans préparer de scénario, utilisez le raccourci **Importer une photo → Créer ma vidéo** de l'accueil : le studio prépare automatiquement le projet et son animation locale. Product Video Studio reste disponible pour les réglages avancés.
 
 Le budget mensuel partagé est de **0 €** par défaut ; Runway et Replicate sont désactivés. Le parcours local ne déclenche aucun appel payant.
 
@@ -76,6 +80,7 @@ Cette version est destinée à un usage personnel sur une machine de confiance. 
 ```bash
 npm run typecheck
 npm test
+npm run test:launcher
 npm run build
 npm run test:smoke
 npm run test:smoke:fashion
