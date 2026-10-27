@@ -4,7 +4,17 @@ Résultats constatés les **19, 20, 23, 26 et 27 octobre 2026** dans l'environne
 
 ## État actuel
 
-La suite complète compte **269 tests réussis dans 20 fichiers** après l'ajout du moteur de création de contenus du 26 octobre. TypeScript, la génération des types Next.js et le build de production passent. Le parcours HTTP produit du 23 octobre avait réussi **dix contrôles** sans `APP_ORIGIN` explicite, dont les adresses locales et les protections d'origine. Ces contrôles HTTP et les parcours Fashion et montage/Pinterest des étapes précédentes ne sont pas présentés comme une nouvelle exécution le 26 octobre.
+La suite complète compte **269 tests réussis dans 20 fichiers**, réexécutés avec succès le 27 octobre après l'optimisation de l'accueil. TypeScript, la génération des types Next.js et le build de production passent aussi à cette date. Le parcours HTTP produit du 23 octobre avait réussi **dix contrôles** sans `APP_ORIGIN` explicite, dont les adresses locales et les protections d'origine. Ces contrôles HTTP et les parcours Fashion et montage/Pinterest restent des résultats des étapes précédentes.
+
+## Chargement de l'accueil du 27 octobre
+
+Les onze ateliers et panneaux avancés sont chargés à la demande. L'atelier de contenus n'est monté qu'à sa première ouverture, puis reste conservé pour préserver les brouillons pendant les changements de page. Le suivi des tâches attend la fin d'une réponse avant de programmer la suivante.
+
+Une comparaison Chromium sur le build de production précédent et le nouveau build, avec contextes vierges et les mêmes données temporaires, mesure **253 091 → 191 058 octets de JavaScript encodés** chargés par l'accueil, soit **24,5 % de moins**. Le chunk propre à la page passe de 94 207 à 24 838 octets. Le nombre de fichiers JavaScript passe de six à sept : la comparaison porte sur leur poids total, pas sur leur nombre. L'appel à `/api/creator` disparaît du chargement initial et n'a lieu qu'à la première ouverture de l'atelier. Il s'agit de mesures cloud, pas d'une promesse de temps de chargement sur Windows.
+
+Le contrôle navigateur confirme les quatre choix de l'accueil, la conservation d'un brouillon après navigation et l'absence d'erreur JavaScript. Avec des réponses de suivi artificiellement retardées de **3,7 secondes**, une seule requête de suivi reste active à la fois ; le suivi s'arrête une fois les tâches terminées.
+
+Le parcours complet de création est également réexécuté : quatre objectifs, langues, thèmes, brouillons, confirmations, import PNG/MP4/WAV, reprises après réponses perdues, aperçu réel 360p et MP4 720 × 1280 de 8,021 secondes, lecture et téléchargements MP4/JPEG/SRT, affiliation, épisode suivant, version courte indépendante et mobile à 390 pixels. L'état final isolé compte six projets, trois tâches réussies et 12 médias, avec zéro erreur JavaScript et aucun appel payant. Les services et données de contrôle sont nettoyés ; le worker préexistant est conservé.
 
 ## Visite filmée des quatre parcours du 27 octobre
 

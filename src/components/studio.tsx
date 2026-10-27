@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { NextIntlClientProvider, useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
 import {
   ArrowDownToLine,
   ArrowLeft,
@@ -58,21 +59,73 @@ import {
   Select,
   cn,
 } from './ui/primitives';
-import { FashionStudio } from './fashion-studio';
-import { EditorStudio } from './editor-studio';
-import { SEOStudio } from './seo-studio';
-import { ProvidersPanel } from './providers-panel';
-import { BrandPresetsPanel } from './brand-presets-panel';
-import { ImageExportPanel } from './image-export-panel';
-import { StylePresetsPanel } from './style-presets-panel';
-import { ProductImportPanel } from './product-import-panel';
-import { ModelCatalogPanel } from './model-catalog-panel';
-import { QuickCreatePanel } from './quick-create-panel';
-import { CreatorStudio } from './creator-studio';
 import type { CreatorMode } from '@/lib/creator-script';
 import './creator-goals.css';
 import fr from '@/messages/fr';
 import en from '@/messages/en';
+
+function WorkshopLoading() {
+  const t = useTranslations();
+  return (
+    <div className="empty-state" role="status">
+      <LoaderCircle className="spin" size={24} />
+      <p>{t('loading')}</p>
+    </div>
+  );
+}
+
+// Keep the sign-in page and home independent of the larger workshops. Each
+// module is fetched only when its panel is first rendered.
+const FashionStudio = dynamic(
+  () => import('./fashion-studio').then((module) => module.FashionStudio),
+  { loading: WorkshopLoading },
+);
+const EditorStudio = dynamic(
+  () => import('./editor-studio').then((module) => module.EditorStudio),
+  { loading: WorkshopLoading },
+);
+const SEOStudio = dynamic(
+  () => import('./seo-studio').then((module) => module.SEOStudio),
+  { loading: WorkshopLoading },
+);
+const ProvidersPanel = dynamic(
+  () => import('./providers-panel').then((module) => module.ProvidersPanel),
+  { loading: WorkshopLoading },
+);
+const BrandPresetsPanel = dynamic(
+  () =>
+    import('./brand-presets-panel').then((module) => module.BrandPresetsPanel),
+  { loading: WorkshopLoading },
+);
+const ImageExportPanel = dynamic(
+  () =>
+    import('./image-export-panel').then((module) => module.ImageExportPanel),
+  { loading: WorkshopLoading },
+);
+const StylePresetsPanel = dynamic(
+  () =>
+    import('./style-presets-panel').then((module) => module.StylePresetsPanel),
+  { loading: WorkshopLoading },
+);
+const ProductImportPanel = dynamic(
+  () =>
+    import('./product-import-panel').then((module) => module.ProductImportPanel),
+  { loading: WorkshopLoading },
+);
+const ModelCatalogPanel = dynamic(
+  () =>
+    import('./model-catalog-panel').then((module) => module.ModelCatalogPanel),
+  { loading: WorkshopLoading },
+);
+const QuickCreatePanel = dynamic(
+  () => import('./quick-create-panel').then((module) => module.QuickCreatePanel),
+  { loading: WorkshopLoading },
+);
+const CreatorStudio = dynamic(
+  () => import('./creator-studio').then((module) => module.CreatorStudio),
+  { loading: WorkshopLoading },
+);
+
 type Locale = 'fr' | 'en';
 type Media = {
   id: string;
@@ -330,6 +383,7 @@ function StudioApp({
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [settings, setSettings] = useState<Settings>(defaults);
   const [page, setPage] = useState('dashboard');
+  const [creatorOpened, setCreatorOpened] = useState(false);
   const [creatorMode, setCreatorMode] = useState<CreatorMode>('ugc');
   const [creatorProjectId, setCreatorProjectId] = useState('');
   const [creatorStartToken, setCreatorStartToken] = useState(0);
@@ -439,10 +493,18 @@ function StudioApp({
   }, []);
   useEffect(() => {
     if (!pending) return;
-    const interval = setInterval(() => {
-      reload().catch(() => {});
-    }, 2500);
-    return () => clearInterval(interval);
+    let cancelled = false;
+    let timeout: ReturnType<typeof setTimeout>;
+    async function poll() {
+      await reload().catch(() => {});
+      if (!cancelled) timeout = setTimeout(poll, 2500);
+    }
+    // A slow response must finish before scheduling the next request.
+    timeout = setTimeout(poll, 2500);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, [pending, reload]);
   useEffect(() => {
     document.documentElement.dataset.theme = settings.theme;
@@ -479,6 +541,7 @@ function StudioApp({
     }
   }
   function navigate(value: string) {
+    if (value === 'creator') setCreatorOpened(true);
     setPage(value);
     setMenuOpen(false);
   }
@@ -910,32 +973,34 @@ function StudioApp({
               ))}
             </section>
           )}
-          <div hidden={page !== 'creator'}>
-            <CreatorStudio
-              locale={locale}
-              media={media}
-              jobs={jobs}
-              initialProjectId={creatorProjectId}
-              initialMode={creatorMode}
-              startToken={creatorStartToken}
-              onRefresh={reload}
-              onQueued={(job) => {
-                setSnapshot((current) =>
-                  current
-                    ? {
-                        ...current,
-                        jobs: [
-                          job,
-                          ...(current.jobs || []).filter(
-                            (item) => item.id !== job.id,
-                          ),
-                        ],
-                      }
-                    : current,
-                );
-              }}
-            />
-          </div>
+          {creatorOpened && (
+            <div hidden={page !== 'creator'}>
+              <CreatorStudio
+                locale={locale}
+                media={media}
+                jobs={jobs}
+                initialProjectId={creatorProjectId}
+                initialMode={creatorMode}
+                startToken={creatorStartToken}
+                onRefresh={reload}
+                onQueued={(job) => {
+                  setSnapshot((current) =>
+                    current
+                      ? {
+                          ...current,
+                          jobs: [
+                            job,
+                            ...(current.jobs || []).filter(
+                              (item) => item.id !== job.id,
+                            ),
+                          ],
+                        }
+                      : current,
+                  );
+                }}
+              />
+            </div>
+          )}
           <div hidden={page !== 'dashboard'}>
             <QuickCreatePanel
               locale={locale}
